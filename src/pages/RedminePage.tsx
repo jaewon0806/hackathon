@@ -1,9 +1,100 @@
-// Sprint 3에서 구현 예정 — 현재 플레이스홀더
-export function RedminePage() {
+import { useMemo } from 'react'
+import { Link } from 'react-router-dom'
+import { AlertCircle, Settings } from 'lucide-react'
+import { ProjectVersionSelector } from '@/components/redmine/ProjectVersionSelector'
+import { VersionProgressBar } from '@/components/redmine/VersionProgressBar'
+import { DueSoonBanner } from '@/components/redmine/DueSoonBanner'
+import { IssueFilterBar } from '@/components/redmine/IssueFilterBar'
+import { IssueTree } from '@/components/redmine/IssueTree'
+import { useRedmineIssues } from '@/hooks/useRedmineIssues'
+import { useRedmineStore } from '@/store/redmineStore'
+import { useSettingsStore } from '@/store/settingsStore'
+import { buildIssueTree, filterIssueTree } from '@/utils/issueTreeBuilder'
+
+function IssueSkeleton() {
   return (
-    <div className="p-6">
-      <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4">Redmine 일감 목록</h2>
-      <p className="text-sm text-gray-400">Sprint 3에서 일감 트리 뷰가 구현됩니다.</p>
+    <div className="space-y-2 p-3 animate-pulse">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div key={i} className="flex items-center gap-3 py-2">
+          <div className="w-4 h-4 bg-gray-200 dark:bg-gray-700 rounded" />
+          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-16" />
+          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded flex-1" />
+          <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-16" />
+        </div>
+      ))}
+    </div>
+  )
+}
+
+export function RedminePage() {
+  const apiKey = useSettingsStore((s) => s.redmine.apiKey)
+  const { selectedProjectId, selectedVersionId, statusFilter, priorityFilter, keyword } = useRedmineStore()
+
+  const { data: issues = [], isLoading, isError, error } = useRedmineIssues(selectedProjectId, selectedVersionId)
+
+  // 트리 구성 + 필터 적용
+  const filteredTree = useMemo(() => {
+    const tree = buildIssueTree(issues)
+    if (statusFilter.length === 0 && priorityFilter.length === 0 && !keyword) return tree
+    return filterIssueTree(tree, (node) => {
+      if (statusFilter.length > 0 && !statusFilter.includes(node.status.name)) return false
+      if (priorityFilter.length > 0 && !priorityFilter.includes(node.priority.name)) return false
+      if (keyword && !node.subject.toLowerCase().includes(keyword.toLowerCase())) return false
+      return true
+    })
+  }, [issues, statusFilter, priorityFilter, keyword])
+
+  if (!apiKey) {
+    return (
+      <div className="p-6 flex flex-col items-center justify-center h-64 gap-3 text-gray-500">
+        <AlertCircle size={32} className="opacity-50" />
+        <p className="text-sm">Redmine API 키가 설정되지 않았습니다.</p>
+        <Link to="/settings" className="flex items-center gap-1.5 text-sm text-blue-600 hover:underline">
+          <Settings size={14} />
+          설정 페이지로 이동
+        </Link>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex flex-col h-full">
+      {/* 필터 영역 */}
+      <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 space-y-3">
+        <ProjectVersionSelector />
+
+        {selectedProjectId && issues.length > 0 && (
+          <>
+            <VersionProgressBar issues={issues} />
+            <DueSoonBanner issues={issues} />
+            <IssueFilterBar issues={issues} />
+          </>
+        )}
+      </div>
+
+      {/* 일감 트리 */}
+      <div className="flex-1 overflow-auto bg-white dark:bg-gray-900 p-3">
+        {!selectedProjectId ? (
+          <div className="flex flex-col items-center justify-center py-20 text-gray-400">
+            <p className="text-sm">프로젝트를 선택하세요.</p>
+          </div>
+        ) : isLoading ? (
+          <IssueSkeleton />
+        ) : isError ? (
+          <div className="flex flex-col items-center justify-center py-16 gap-2 text-red-500">
+            <AlertCircle size={32} />
+            <p className="text-sm">
+              {error instanceof Error && error.message === 'REDMINE_UNAUTHORIZED'
+                ? 'Redmine API 키가 유효하지 않습니다. 설정을 확인하세요.'
+                : error instanceof Error && error.message === 'REDMINE_FORBIDDEN'
+                ? '해당 프로젝트에 접근 권한이 없습니다.'
+                : '서버에 연결할 수 없습니다.'}
+            </p>
+          </div>
+        ) : (
+          <IssueTree nodes={filteredTree} />
+        )}
+      </div>
     </div>
   )
 }
