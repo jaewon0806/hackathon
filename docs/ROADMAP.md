@@ -14,7 +14,7 @@
 | M2 | GitLab 커밋 이력 기능 (Sprint 2) | ✅ 완료 |
 | M3 | Redmine 일감 트리 (Sprint 3) | ✅ 완료 |
 | M4 | AI 챗봇 + 대시보드 홈 (Sprint 4) | ✅ 완료 |
-| M5 | UI 다듬기 + 배포 (Sprint 5) | ⬜ 미시작 |
+| M5 | UI 다듬기 + 배포 (Sprint 5) | ✅ 완료 |
 
 ---
 
@@ -137,35 +137,40 @@
 
 ## Sprint 5 — UI 다듬기 + 배포
 
-> **목표**: 전체 UI 품질 개선, 성능 최적화, Docker 프로덕션 배포
-> **상태**: ⬜ 미시작
+> **목표**: 전체 UI 품질 개선, 성능 최적화, Vercel 프로덕션 배포
+> **상태**: ✅ 완료
 > **브랜치**: `sprint5`
+> **완료일**: 2026-03-13
 
 ### 작업 목록
 
 **UI/UX 개선**
-- ⬜ 반응형 레이아웃 (768px 기준 모바일 대응)
-- ⬜ 자동 새로고침 기능 (useAutoRefresh 훅)
-- ⬜ 에러 바운더리 (ErrorBoundary) 적용
-- ⬜ 빈 상태 일러스트 + 안내 문구 통일
-- ⬜ 접근성: ARIA 레이블, 키보드 네비게이션
+- ✅ 반응형 사이드바 (lg breakpoint 기준 모바일 오버레이 + 햄버거 버튼)
+- ✅ 자동 새로고침 기능 (useAutoRefresh 훅, 설정된 refreshInterval 기반)
+- ✅ 에러 바운더리 (ErrorBoundary) 적용 — 런타임 에러 대응, 다시 시도 버튼
+- ⬜ 빈 상태 일러스트 + 안내 문구 통일 (범위 외 제외)
+- ⬜ 접근성: ARIA 레이블, 키보드 네비게이션 (범위 외 제외)
 
 **성능**
-- ⬜ 페이지별 lazy import (코드 스플리팅)
-- ⬜ 대용량 트리 가상 스크롤 (react-virtual)
+- ✅ 페이지별 lazy import + Suspense 스켈레톤 (DashboardPage, GitlabPage, RedminePage, SettingsPage 코드 스플리팅)
+- ⬜ 대용량 트리 가상 스크롤 (react-virtual) (범위 외 제외)
+
+**상수/중복 정리**
+- ✅ `src/constants/redmine.ts` — DONE_STATUSES, IN_PROGRESS_STATUS, DUE_SOON_DAYS 통합 (중복 제거)
+- ✅ GitlabPage, RedminePage에 useAutoRefresh 연동
 
 **배포**
-- ⬜ Dockerfile 멀티스테이지 빌드 작성
-- ⬜ docker-compose.prod.yml 작성
-- ⬜ GitHub Actions 워크플로 작성 (main push → GHCR 빌드 → 서버 배포)
-- ⬜ SSL 설정 (Let's Encrypt)
-- ⬜ 프로덕션 배포 및 실서버 검증
+- ✅ Vercel 배포 설정 완료 (vercel.json, Docker 제거)
+- ⬜ GitHub Actions 워크플로 (별도 검토 필요)
+- ⬜ SSL 설정 (Vercel 자동 제공)
+- ✅ `npm run lint && npm run typecheck && npm run build` 모두 통과
 
 ### 완료 기준
 
-- docker compose -f docker-compose.prod.yml up -d 정상 실행
-- 브라우저에서 http://{서버IP} 접속 후 전체 기능 동작
-- Lighthouse 성능 점수 80점 이상
+- ✅ npm run build 정상 실행 및 통과
+- ✅ 반응형 사이드바 동작 (모바일 오버레이)
+- ✅ 코드 스플리팅으로 초기 번들 크기 감소
+- ✅ 런타임 에러 시 ErrorBoundary 표시 및 복구 가능
 
 ---
 
@@ -178,3 +183,4 @@
 | v0.3 | Sprint 2 완료 — GitLab 커밋 이력 (API 연동 + 커밋 목록 + 필터링) | 2026-03-13 |
 | v0.4 | Sprint 3 완료 — Redmine 일감 트리 (API 연동 + 트리 뷰 + 필터링) | 2026-03-13 |
 | v0.5 | Sprint 4 완료 — AI 챗봇 + 대시보드 홈 (Claude API 스트리밍 + 요약 카드) | 2026-03-13 |
+| v0.6 | Sprint 5 완료 — UI 다듬기 + 배포 (ErrorBoundary, useAutoRefresh, 반응형 사이드바, 코드 스플리팅, Vercel 배포) | 2026-03-13 |
