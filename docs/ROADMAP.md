@@ -11,8 +11,8 @@
 | 마일스톤 | 목표 | 상태 |
 |---------|------|------|
 | M1 | 프로젝트 기반 구축 (Sprint 1) | ✅ 완료 |
-| M2 | GitLab 커밋 이력 기능 (Sprint 2) | ⬜ 미시작 |
-| M3 | Redmine 일감 트리 (Sprint 3) | ⬜ 미시작 |
+| M2 | GitLab 커밋 이력 기능 (Sprint 2) | ✅ 완료 |
+| M3 | Redmine 일감 트리 (Sprint 3) | ✅ 완료 |
 | M4 | AI 챗봇 + 대시보드 홈 (Sprint 4) | ⬜ 미시작 |
 | M5 | UI 다듬기 + 배포 (Sprint 5) | ⬜ 미시작 |
 
@@ -51,19 +51,20 @@
 ## Sprint 2 — GitLab 커밋 이력
 
 > **목표**: GitLab API 연동 + 프로젝트/브랜치 선택 + 커밋 목록 + 필터링
-> **상태**: ⬜ 미시작
+> **상태**: ✅ 완료
 > **브랜치**: `sprint2`
+> **완료일**: 2026-03-13
 
 ### 작업 목록
 
-- ⬜ GitLab API 클라이언트 (src/api/gitlabClient.ts) 구현
-- ⬜ useGitlabProjects, useGitlabBranches, useGitlabCommits 훅 구현
-- ⬜ ProjectBranchSelector 컴포넌트 (드롭다운 연동)
-- ⬜ CommitFilterBar 컴포넌트 (작성자/기간/키워드 필터)
-- ⬜ CommitList + CommitItem 컴포넌트
-- ⬜ 더 불러오기 (Infinite Scroll)
-- ⬜ 로딩 스켈레톤 + 빈 상태 UI
-- ⬜ 마지막 선택 값 로컬 스토리지 저장
+- ✅ GitLab API 클라이언트 (src/api/gitlabClient.ts) 구현
+- ✅ useGitlabProjects, useGitlabBranches, useGitlabCommits 훅 구현
+- ✅ ProjectBranchSelector 컴포넌트 (드롭다운 연동)
+- ✅ CommitFilterBar 컴포넌트 (작성자/기간/키워드 필터)
+- ✅ CommitList + CommitItem 컴포넌트
+- ✅ 더 불러오기 (Infinite Scroll)
+- ✅ 로딩 스켈레톤 + 빈 상태 UI
+- ✅ 마지막 선택 값 로컬 스토리지 저장
 
 ### 완료 기준
 
@@ -76,20 +77,22 @@
 ## Sprint 3 — Redmine 일감 트리
 
 > **목표**: Redmine API 연동 + 프로젝트/버전 선택 + 트리 뷰 + 필터링
-> **상태**: ⬜ 미시작
+> **상태**: ✅ 완료
 > **브랜치**: `sprint3`
+> **완료일**: 2026-03-13
 
 ### 작업 목록
 
-- ⬜ Redmine API 클라이언트 (src/api/redmineClient.ts) 구현
-- ⬜ useRedmineProjects, useRedmineVersions, useRedmineIssues 훅 구현
-- ⬜ 트리 변환 유틸 (issueTreeBuilder.ts) 구현
-- ⬜ ProjectVersionSelector 컴포넌트
-- ⬜ VersionProgressBar 컴포넌트 (전체 완료율)
-- ⬜ DueSoonBanner 컴포넌트 (3일 이내 마감 경고)
-- ⬜ IssueFilterBar 컴포넌트 (담당자/상태/우선순위/키워드)
-- ⬜ IssueTree + IssueTreeNode 컴포넌트 (재귀, 펼치기/접기)
-- ⬜ 로딩 스켈레톤 + 빈 상태 UI
+- ✅ Redmine API 클라이언트 (src/api/redmineClient.ts) 구현
+- ✅ useRedmineProjects, useRedmineVersions, useRedmineIssues 훅 구현
+- ✅ 트리 변환 유틸 (issueTreeBuilder.ts) 구현
+- ✅ ProjectVersionSelector 컴포넌트
+- ✅ VersionProgressBar 컴포넌트 (전체 완료율)
+- ✅ DueSoonBanner 컴포넌트 (3일 이내 마감 경고)
+- ✅ IssueFilterBar 컴포넌트 (상태/우선순위 토글 칩 + 키워드 검색)
+- ✅ IssueTree + IssueTreeNode 컴포넌트 (재귀, 펼치기/접기)
+- ✅ 로딩 스켈레톤 + 빈 상태 UI
+- ✅ RedminePage 완성: API 미설정 안내, 에러(401/403/네트워크) 처리
 
 ### 완료 기준
 
@@ -168,3 +171,5 @@
 |------|------|------|
 | v0.1 | 프로젝트 최초 설정 및 ROADMAP 작성 | 2026-03-13 |
 | v0.2 | Sprint 1 완료 — 프로젝트 기반 구축 (React + Vite + 레이아웃 + 설정 페이지) | 2026-03-13 |
+| v0.3 | Sprint 2 완료 — GitLab 커밋 이력 (API 연동 + 커밋 목록 + 필터링) | 2026-03-13 |
+| v0.4 | Sprint 3 완료 — Redmine 일감 트리 (API 연동 + 트리 뷰 + 필터링) | 2026-03-13 |
