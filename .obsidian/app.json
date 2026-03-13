@@ -1,0 +1,19 @@
+{
+  "promptDelete": false,
+  "showLineNumber": true,
+  "rightToLeft": false,
+  "strictLineBreaks": false,
+  "tabSize": 4,
+  "readableLineLength": false,
+  "alwaysUpdateLinks": true,
+  "newFileLocation": "current",
+  "attachmentFolderPath": "./",
+  "spellcheck": false,
+  "pdfExportSettings": {
+    "pageSize": "Letter",
+    "landscape": false,
+    "margin": "0",
+    "downscalePercent": 100
+  },
+  "showUnsupportedFiles": false
+}

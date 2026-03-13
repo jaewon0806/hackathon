@@ -1,0 +1,12 @@
+{
+  "cssTheme": "Things",
+  "theme": "moonstone",
+  "textFontFamily": "Pretendard",
+  "monospaceFontFamily": "Cascadia Code",
+  "enabledCssSnippets": [
+    "font-reset"
+  ],
+  "baseFontSize": 14,
+  "interfaceFontFamily": "Pretendard",
+  "baseFontSizeAction": false
+}

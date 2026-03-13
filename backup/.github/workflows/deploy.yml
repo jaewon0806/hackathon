@@ -7,13 +7,15 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  # TODO: 아래 이미지명을 실제 GitHub 조직/계정명으로 변경하세요
-  # 예시: ghcr.io/frogy95/dashboard-frontend
-  FRONTEND_IMAGE: ghcr.io/YOUR_GITHUB_ORG/dashboard-frontend
+  # TODO: 아래 이미지명을 프로젝트에 맞게 수정하세요
+  # 예시: BACKEND_IMAGE: ghcr.io/your-org/your-project-backend
+  BACKEND_IMAGE: ghcr.io/YOUR_GITHUB_ORG/YOUR_PROJECT-backend
+  FRONTEND_IMAGE: ghcr.io/YOUR_GITHUB_ORG/YOUR_PROJECT-frontend
+  NGINX_IMAGE: ghcr.io/YOUR_GITHUB_ORG/YOUR_PROJECT-nginx
 
 jobs:
   build-and-push:
-    name: Docker 이미지 빌드 & GHCR push
+    name: 이미지 빌드 & GHCR push
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -37,27 +39,45 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.FRONTEND_IMAGE }}
+          images: ${{ env.BACKEND_IMAGE }}
           tags: |
             type=sha,prefix=,format=short
             type=raw,value=latest
 
-      # Dockerfile: React Vite 빌드 → Nginx 이미지 (단일 컨테이너)
-      # Nginx가 정적 파일 서빙 + GitLab/Redmine API 리버스 프록시를 모두 담당
+      # TODO: Dockerfile 경로를 프로젝트에 맞게 수정하세요
+      - name: 백엔드 이미지 빌드 & push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: docker/backend/Dockerfile.prod
+          target: runtime
+          push: true
+          tags: |
+            ${{ env.BACKEND_IMAGE }}:latest
+            ${{ env.BACKEND_IMAGE }}:${{ steps.meta.outputs.version }}
+
       - name: 프론트엔드 이미지 빌드 & push
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: Dockerfile
+          file: docker/frontend/Dockerfile.prod
+          target: runtime
           push: true
           tags: |
             ${{ env.FRONTEND_IMAGE }}:latest
             ${{ env.FRONTEND_IMAGE }}:${{ steps.meta.outputs.version }}
-          # 빌드 시점 환경변수 (Vite가 번들에 포함)
           build-args: |
-            VITE_GITLAB_URL=${{ secrets.VITE_GITLAB_URL }}
-            VITE_REDMINE_URL=${{ secrets.VITE_REDMINE_URL }}
-            VITE_CLAUDE_MODEL=${{ secrets.VITE_CLAUDE_MODEL }}
+            NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}
+
+      - name: nginx 이미지 빌드 & push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: docker/nginx/Dockerfile
+          push: true
+          tags: |
+            ${{ env.NGINX_IMAGE }}:latest
+            ${{ env.NGINX_IMAGE }}:${{ steps.meta.outputs.version }}
 
   deploy:
     name: 프로덕션 서버 배포
@@ -75,14 +95,12 @@ jobs:
           command_timeout: 10m
           script: |
             cd /opt/app
-            # 최신 docker-compose.prod.yml 다운로드
             sudo curl -fsSL \
               -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
               https://raw.githubusercontent.com/${{ github.repository }}/main/docker-compose.prod.yml \
               -o docker-compose.prod.yml
-            # GHCR 로그인 + 이미지 pull + 컨테이너 재시작
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             docker compose -f docker-compose.prod.yml pull
             docker compose -f docker-compose.prod.yml up -d
-            # 미사용 이미지 정리
+            docker compose -f docker-compose.prod.yml exec -T backend alembic upgrade head
             docker image prune -f

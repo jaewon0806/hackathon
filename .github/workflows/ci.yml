@@ -7,79 +7,72 @@ on:
       - main
 
 jobs:
-  test:
-    name: 백엔드 테스트
+  lint-and-typecheck:
+    name: ESLint + TypeScript 타입 체크
     runs-on: ubuntu-latest
-
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_USER: app_user
-          POSTGRES_PASSWORD: testpassword
-          POSTGRES_DB: app_test
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
-      redis:
-        image: redis:7-alpine
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 6379:6379
 
     steps:
       - name: 코드 체크아웃
         uses: actions/checkout@v4
 
-      - name: Python 3.12 설정
-        uses: actions/setup-python@v5
+      - name: Node.js 20 설정
+        uses: actions/setup-node@v4
         with:
-          python-version: "3.12"
-          cache: "pip"
-          # TODO: requirements.txt 경로를 프로젝트에 맞게 수정하세요
-          cache-dependency-path: backend/requirements.txt
+          node-version: "20"
+          cache: "npm"
 
       - name: 의존성 설치
-        # TODO: requirements.txt 경로를 프로젝트에 맞게 수정하세요
-        run: pip install -r backend/requirements.txt
+        run: npm ci
 
-      - name: pytest 실행
-        env:
-          POSTGRES_HOST: localhost
-          POSTGRES_PORT: 5432
-          POSTGRES_DB: app_test
-          POSTGRES_USER: app_user
-          POSTGRES_PASSWORD: testpassword
-          REDIS_HOST: localhost
-          REDIS_PORT: 6379
-          JWT_SECRET: test-jwt-secret-for-ci
-          SECRET_KEY: test-secret-key-for-ci
-          DEBUG: "false"
-        # TODO: 테스트 경로를 프로젝트에 맞게 수정하세요
-        run: pytest backend/tests/ -v --tb=short
+      - name: ESLint 실행
+        run: npm run lint
+
+      - name: TypeScript 타입 체크
+        run: npm run typecheck
 
   build:
-    name: Docker 빌드 확인
+    name: Vite 프로덕션 빌드 검증
     runs-on: ubuntu-latest
 
     steps:
       - name: 코드 체크아웃
         uses: actions/checkout@v4
 
-      # TODO: 프로젝트의 Dockerfile 경로에 맞게 빌드 스텝을 수정하세요
-      - name: 백엔드 이미지 빌드 테스트
-        run: docker build -f docker/backend/Dockerfile.prod --target runtime -t app-backend:test .
+      - name: Node.js 20 설정
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
 
-      - name: 프론트엔드 이미지 빌드 테스트
-        run: docker build -f docker/frontend/Dockerfile.prod --target runtime -t app-frontend:test .
+      - name: 의존성 설치
+        run: npm ci
+
+      - name: 프로덕션 빌드
+        run: npm run build
         env:
-          NEXT_PUBLIC_API_URL: http://localhost:8000
+          # CI 환경용 더미 값 (빌드 성공 여부만 검증)
+          VITE_GITLAB_URL: https://gitlab.example.com
+          VITE_GITLAB_TOKEN: ci-dummy-token
+          VITE_REDMINE_URL: https://redmine.example.com
+          VITE_REDMINE_API_KEY: ci-dummy-key
+          VITE_ANTHROPIC_API_KEY: ci-dummy-key
+          VITE_CLAUDE_MODEL: claude-haiku-4-5
+          VITE_DEFAULT_REFRESH_INTERVAL: "900"
+
+  docker-build:
+    name: Docker 이미지 빌드 테스트
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+
+      - name: Docker 이미지 빌드 (Nginx + React 빌드 포함)
+        run: docker build -t dashboard-frontend:ci-test .
+        env:
+          VITE_GITLAB_URL: https://gitlab.example.com
+          VITE_GITLAB_TOKEN: ci-dummy-token
+          VITE_REDMINE_URL: https://redmine.example.com
+          VITE_REDMINE_API_KEY: ci-dummy-key
+          VITE_ANTHROPIC_API_KEY: ci-dummy-key
+          VITE_CLAUDE_MODEL: claude-haiku-4-5
