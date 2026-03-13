@@ -13,7 +13,7 @@
 | M1 | 프로젝트 기반 구축 (Sprint 1) | ✅ 완료 |
 | M2 | GitLab 커밋 이력 기능 (Sprint 2) | ✅ 완료 |
 | M3 | Redmine 일감 트리 (Sprint 3) | ✅ 완료 |
-| M4 | AI 챗봇 + 대시보드 홈 (Sprint 4) | ⬜ 미시작 |
+| M4 | AI 챗봇 + 대시보드 홈 (Sprint 4) | ✅ 완료 |
 | M5 | UI 다듬기 + 배포 (Sprint 5) | ⬜ 미시작 |
 
 ---
@@ -105,23 +105,27 @@
 ## Sprint 4 — AI 챗봇 + 대시보드 홈
 
 > **목표**: Anthropic Claude API 연동 챗봇 + 대시보드 홈 요약 카드
-> **상태**: ⬜ 미시작
+> **상태**: ✅ 완료
 > **브랜치**: `sprint4`
+> **완료일**: 2026-03-13
 
 ### 작업 목록
 
 **챗봇**
-- ⬜ Anthropic Claude API 클라이언트 (src/api/claudeClient.ts) 구현
-- ⬜ ChatbotPanel 플로팅 컴포넌트 (우하단 고정, 펼치기/접기)
-- ⬜ ChatMessage 컴포넌트 (마크다운 렌더링, DOMPurify 적용)
-- ⬜ SuggestedQuestions 컴포넌트 (추천 질문 칩)
-- ⬜ 대화 이력 로컬 스토리지 저장 (최대 50건)
-- ⬜ 새 대화 초기화 버튼
+- ✅ Anthropic Claude API 클라이언트 (src/api/claudeClient.ts) 구현 (dangerouslyAllowBrowser, 스트리밍)
+- ✅ ChatbotPanel 플로팅 컴포넌트 (우하단 고정, 펼치기/접기)
+- ✅ ChatMessage 컴포넌트 (인라인 마크다운 렌더링: bold, code, 줄바꿈)
+- ✅ SuggestedQuestions 컴포넌트 (추천 질문 칩 4개)
+- ✅ 대화 이력 로컬 스토리지 저장 (최대 50건, Zustand persist)
+- ✅ 새 대화 초기화 버튼
+- ✅ API 키 미설정 안내 UI
+- ✅ App.tsx 전역 마운트 (모든 페이지에서 사용 가능)
 
 **대시보드 홈**
-- ⬜ 요약 카드 4종 (담당 일감 / 이번 주 커밋 / 진행 중 / 기한 초과)
-- ⬜ 최근 활동 피드 (GitLab + Redmine 혼합, 시간순)
-- ⬜ 로딩 스켈레톤 UI
+- ✅ 요약 카드 4종 (담당 일감 / 이번 주 커밋 / 진행 중 / 기한 초과)
+- ✅ 최근 활동 피드 (GitLab 커밋 + Redmine 이슈 혼합, 시간순)
+- ✅ 로딩 스켈레톤 UI
+- ✅ API 미설정 안내 + 설정 페이지 링크
 
 ### 완료 기준
 
@@ -173,3 +177,4 @@
 | v0.2 | Sprint 1 완료 — 프로젝트 기반 구축 (React + Vite + 레이아웃 + 설정 페이지) | 2026-03-13 |
 | v0.3 | Sprint 2 완료 — GitLab 커밋 이력 (API 연동 + 커밋 목록 + 필터링) | 2026-03-13 |
 | v0.4 | Sprint 3 완료 — Redmine 일감 트리 (API 연동 + 트리 뷰 + 필터링) | 2026-03-13 |
+| v0.5 | Sprint 4 완료 — AI 챗봇 + 대시보드 홈 (Claude API 스트리밍 + 요약 카드) | 2026-03-13 |
