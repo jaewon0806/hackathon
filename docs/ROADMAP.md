@@ -10,7 +10,7 @@
 
 | 마일스톤 | 목표 | 상태 |
 |---------|------|------|
-| M1 | 프로젝트 기반 구축 (Sprint 1) | ⬜ 미시작 |
+| M1 | 프로젝트 기반 구축 (Sprint 1) | ✅ 완료 |
 | M2 | GitLab 커밋 이력 기능 (Sprint 2) | ⬜ 미시작 |
 | M3 | Redmine 일감 트리 (Sprint 3) | ⬜ 미시작 |
 | M4 | AI 챗봇 + 대시보드 홈 (Sprint 4) | ⬜ 미시작 |
@@ -21,23 +21,24 @@
 ## Sprint 1 — 프로젝트 기반 구축
 
 > **목표**: React + TypeScript 프로젝트 초기 설정, 라우팅, 레이아웃, 설정 화면
-> **상태**: ⬜ 미시작
+> **상태**: ✅ 완료
 > **브랜치**: `sprint1`
+> **완료일**: 2026-03-13
 
 ### 작업 목록
 
-- ⬜ Vite + React 18 + TypeScript 프로젝트 초기화
-- ⬜ Tailwind CSS + shadcn/ui 설치 및 설정
-- ⬜ Zustand + React Query 설치 및 Provider 설정
-- ⬜ Sidebar + TopBar 공통 레이아웃 컴포넌트 구현
-- ⬜ 라우터 설정 (react-router-dom): /, /gitlab, /redmine, /settings
-- ⬜ SCR-004 설정 페이지 구현 (API 토큰 입력 + 로컬 스토리지 저장)
-- ⬜ GitLab / Redmine 연결 테스트 기능 구현
-- ⬜ Vite 프록시 설정 (CORS 해결)
-- ⬜ Docker + Nginx 설정 파일 작성
-- ⬜ .env.example 파일 작성
-- ⬜ Toast 알림 컴포넌트 구현
-- ⬜ 테마 (라이트/다크/시스템) 전환 기능
+- ✅ Vite + React 18 + TypeScript 프로젝트 초기화
+- ✅ Tailwind CSS v4 설치 및 설정 (shadcn/ui 대신 커스텀 컴포넌트)
+- ✅ Zustand v5 + React Query v5 설치 및 Provider 설정
+- ✅ Sidebar + TopBar 공통 레이아웃 컴포넌트 구현
+- ✅ 라우터 설정 (react-router-dom v7): /, /gitlab, /redmine, /settings
+- ✅ SCR-004 설정 페이지 구현 (API 토큰 입력 + 로컬 스토리지 저장)
+- ✅ GitLab / Redmine 연결 테스트 기능 구현
+- ✅ Vite 프록시 설정 (CORS 해결)
+- ✅ Docker 멀티스테이지 빌드 + Nginx 리버스 프록시 설정 파일 작성
+- ✅ .env.example 파일 작성
+- ✅ Toast 알림 컴포넌트 구현
+- ✅ 테마 (라이트/다크/시스템) 전환 기능 (ThemeToggle 3상태)
 
 ### 완료 기준
 
@@ -166,3 +167,4 @@
 | 버전 | 내용 | 날짜 |
 |------|------|------|
 | v0.1 | 프로젝트 최초 설정 및 ROADMAP 작성 | 2026-03-13 |
+| v0.2 | Sprint 1 완료 — 프로젝트 기반 구축 (React + Vite + 레이아웃 + 설정 페이지) | 2026-03-13 |
