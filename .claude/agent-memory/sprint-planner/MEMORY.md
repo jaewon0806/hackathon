@@ -13,9 +13,9 @@
 | Sprint 2 | GitLab 커밋 이력 | ✅ 완료 | 2026-03-13 |
 | Sprint 3 | Redmine 일감 트리 | ✅ 완료 | 2026-03-13 |
 | Sprint 4 | AI 챗봇 + 대시보드 홈 | ✅ 완료 | 2026-03-13 |
-| Sprint 5 | UI 다듬기 + 배포 | ⬜ 미시작 | — |
+| Sprint 5 | UI 다듬기 + 배포 | ✅ 완료 | 2026-03-13 |
 
-**다음 사용 가능한 스프린트 번호**: Sprint 5
+**다음 사용 가능한 스프린트 번호**: Sprint 6
 
 ---
 
@@ -27,7 +27,7 @@
 - **상태관리**: Zustand v5 (persist 미들웨어)
 - **서버 상태**: React Query v5
 - **HTTP**: Axios
-- **인프라**: Docker 멀티스테이지 빌드 + Nginx 리버스 프록시
+- **인프라**: Vercel 배포 (vercel.json rewrites로 GitLab/Redmine API 프록시) — Sprint 5에서 Docker 제거
 
 ---
 
@@ -38,4 +38,6 @@
 - **Anthropic API Key**: `claudeClient.ts`에서 `dangerouslyAllowBrowser: true`로 브라우저 직접 호출 방식 채택. API 키가 settingsStore(localStorage)에서 런타임 로드되므로 번들 노출은 없으나, 네트워크 탭에서 요청이 노출됨. Sprint 5에서 백엔드 프록시 경유 방식 재검토 권장.
 - **nginx.conf**: `proxy_ssl_verify off` 설정 — Sprint 5 프로덕션 배포 시 인증서 검증 활성화 검토.
 - **DONE_STATUSES 중복**: `DueSoonBanner.tsx`와 `VersionProgressBar.tsx`에 `DONE_STATUSES` 배열 중복 정의. Sprint 5에서 `src/constants/redmine.ts`로 추출 권장.
-- **Redmine URL href XSS**: `IssueTreeNode`에서 `redmineUrl` href 사용 시 `javascript:` 프로토콜 필터링 없음. Sprint 5에서 URL 유효성 검사 추가 권장.
+- **Redmine URL href XSS**: `IssueTreeNode`에서 `redmineUrl` href 사용 시 `javascript:` 프로토콜 필터링 없음. Sprint 5 코드 리뷰에서 Medium으로 기록. 다음 스프린트에서 URL 유효성 검사 추가 권장.
+- **Vercel rewrites 하드코딩**: `vercel.json`에 GitLab(`gitlab.ubware.com`), Redmine(`redmine.ubware.com`) URL이 하드코딩됨. 다른 환경에서 재배포 시 수정 필요.
+- **인프라 변경**: Sprint 5에서 Docker/Nginx → Vercel로 전환. `docker compose up --build` 스테이징 검증 절차는 더 이상 해당 없음.
