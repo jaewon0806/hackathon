@@ -1,12 +1,10 @@
 import { AlertTriangle } from 'lucide-react'
 import type { RedmineIssue } from '@/types/redmine.types'
+import { DONE_STATUSES, DUE_SOON_DAYS } from '@/constants/redmine'
 
 interface Props {
   issues: RedmineIssue[]
 }
-
-const DONE_STATUSES = ['해결됨', '완료', '반려']
-const DUE_SOON_DAYS = 3
 
 export function DueSoonBanner({ issues }: Props) {
   const today = new Date()

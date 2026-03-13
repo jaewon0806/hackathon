@@ -10,6 +10,7 @@ import { useRedmineIssues } from '@/hooks/useRedmineIssues'
 import { useRedmineStore } from '@/store/redmineStore'
 import { useSettingsStore } from '@/store/settingsStore'
 import { buildIssueTree, filterIssueTree } from '@/utils/issueTreeBuilder'
+import { useAutoRefresh } from '@/hooks/useAutoRefresh'
 
 function IssueSkeleton() {
   return (
@@ -29,6 +30,8 @@ function IssueSkeleton() {
 export function RedminePage() {
   const apiKey = useSettingsStore((s) => s.redmine.apiKey)
   const { selectedProjectId, selectedVersionId, statusFilter, priorityFilter, keyword } = useRedmineStore()
+
+  useAutoRefresh([['redmine', 'projects'], ['redmine', 'issues']])
 
   const { data: issues = [], isLoading, isError, error } = useRedmineIssues(selectedProjectId, selectedVersionId)
 

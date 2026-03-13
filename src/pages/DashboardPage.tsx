@@ -6,6 +6,7 @@ import { useGitlabCommits } from '@/hooks/useGitlabCommits'
 import { useRedmineStore } from '@/store/redmineStore'
 import { useGitlabStore } from '@/store/gitlabStore'
 import { useSettingsStore } from '@/store/settingsStore'
+import { DONE_STATUSES, IN_PROGRESS_STATUS } from '@/constants/redmine'
 
 function formatRelativeTime(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime()
@@ -49,8 +50,6 @@ function SummaryCard({ icon: Icon, label, value, color, isLoading }: SummaryCard
   )
 }
 
-const DONE_STATUSES = ['해결됨', '완료', '반려']
-const IN_PROGRESS_STATUS = '진행 중'
 
 export function DashboardPage() {
   const glToken = useSettingsStore((s) => s.gitlab.token)

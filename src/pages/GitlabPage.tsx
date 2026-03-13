@@ -8,6 +8,7 @@ import { CommitSkeleton } from '@/components/common/SkeletonLoader'
 import { useGitlabCommits } from '@/hooks/useGitlabCommits'
 import { useGitlabStore } from '@/store/gitlabStore'
 import { useSettingsStore } from '@/store/settingsStore'
+import { useAutoRefresh } from '@/hooks/useAutoRefresh'
 
 export function GitlabPage() {
   const token = useSettingsStore((s) => s.gitlab.token)
@@ -22,6 +23,8 @@ export function GitlabPage() {
     }),
     [authorFilter, dateRange, keyword]
   )
+
+  useAutoRefresh([['gitlab', 'projects'], ['gitlab', 'commits']])
 
   const { data, isLoading, isError, error, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useGitlabCommits(selectedProjectId, selectedBranch, filters)

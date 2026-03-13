@@ -1,10 +1,9 @@
 import type { RedmineIssue } from '@/types/redmine.types'
+import { DONE_STATUSES } from '@/constants/redmine'
 
 interface Props {
   issues: RedmineIssue[]
 }
-
-const DONE_STATUSES = ['해결됨', '완료']
 
 export function VersionProgressBar({ issues }: Props) {
   if (issues.length === 0) return null
