@@ -58,21 +58,3 @@ jobs:
           VITE_ANTHROPIC_API_KEY: ci-dummy-key
           VITE_CLAUDE_MODEL: claude-haiku-4-5
           VITE_DEFAULT_REFRESH_INTERVAL: "900"
-
-  docker-build:
-    name: Docker 이미지 빌드 테스트
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: 코드 체크아웃
-        uses: actions/checkout@v4
-
-      - name: Docker 이미지 빌드 (Nginx + React 빌드 포함)
-        run: docker build -t dashboard-frontend:ci-test .
-        env:
-          VITE_GITLAB_URL: https://gitlab.example.com
-          VITE_GITLAB_TOKEN: ci-dummy-token
-          VITE_REDMINE_URL: https://redmine.example.com
-          VITE_REDMINE_API_KEY: ci-dummy-key
-          VITE_ANTHROPIC_API_KEY: ci-dummy-key
-          VITE_CLAUDE_MODEL: claude-haiku-4-5
