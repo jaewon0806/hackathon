@@ -10,12 +10,12 @@
 | 스프린트 | 목표 | 상태 | 완료일 |
 |---------|------|------|------|
 | Sprint 1 | 프로젝트 기반 구축 (React + Vite + 레이아웃 + 설정 페이지) | ✅ 완료 | 2026-03-13 |
-| Sprint 2 | GitLab 커밋 이력 | ⬜ 미시작 | — |
-| Sprint 3 | Redmine 일감 트리 | ⬜ 미시작 | — |
+| Sprint 2 | GitLab 커밋 이력 | ✅ 완료 | 2026-03-13 |
+| Sprint 3 | Redmine 일감 트리 | ✅ 완료 | 2026-03-13 |
 | Sprint 4 | AI 챗봇 + 대시보드 홈 | ⬜ 미시작 | — |
 | Sprint 5 | UI 다듬기 + 배포 | ⬜ 미시작 | — |
 
-**다음 사용 가능한 스프린트 번호**: Sprint 2
+**다음 사용 가능한 스프린트 번호**: Sprint 4
 
 ---
 
@@ -37,3 +37,5 @@
 - **API 프록시 경로**: `/gitlab-api/` → GitLab API v4, `/redmine-api/` → Redmine API. Vite 개발 서버에도 동일 프록시 경로 설정 필요.
 - **Anthropic API Key**: 현재 `VITE_ANTHROPIC_API_KEY` 환경변수로 관리. Sprint 4 구현 시 브라우저 번들 노출 여부 재검토 필요.
 - **nginx.conf**: `proxy_ssl_verify off` 설정 — Sprint 5 프로덕션 배포 시 인증서 검증 활성화 검토.
+- **DONE_STATUSES 중복**: `DueSoonBanner.tsx`와 `VersionProgressBar.tsx`에 `DONE_STATUSES` 배열 중복 정의. Sprint 5에서 `src/constants/redmine.ts`로 추출 권장.
+- **Redmine URL href XSS**: `IssueTreeNode`에서 `redmineUrl` href 사용 시 `javascript:` 프로토콜 필터링 없음. Sprint 5에서 URL 유효성 검사 추가 권장.
