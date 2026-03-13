@@ -11,7 +11,7 @@
 | 마일스톤 | 목표 | 상태 |
 |---------|------|------|
 | M1 | 프로젝트 기반 구축 (Sprint 1) | ✅ 완료 |
-| M2 | GitLab 커밋 이력 기능 (Sprint 2) | ⬜ 미시작 |
+| M2 | GitLab 커밋 이력 기능 (Sprint 2) | ✅ 완료 |
 | M3 | Redmine 일감 트리 (Sprint 3) | ⬜ 미시작 |
 | M4 | AI 챗봇 + 대시보드 홈 (Sprint 4) | ⬜ 미시작 |
 | M5 | UI 다듬기 + 배포 (Sprint 5) | ⬜ 미시작 |
@@ -51,19 +51,20 @@
 ## Sprint 2 — GitLab 커밋 이력
 
 > **목표**: GitLab API 연동 + 프로젝트/브랜치 선택 + 커밋 목록 + 필터링
-> **상태**: ⬜ 미시작
+> **상태**: ✅ 완료
 > **브랜치**: `sprint2`
+> **완료일**: 2026-03-13
 
 ### 작업 목록
 
-- ⬜ GitLab API 클라이언트 (src/api/gitlabClient.ts) 구현
-- ⬜ useGitlabProjects, useGitlabBranches, useGitlabCommits 훅 구현
-- ⬜ ProjectBranchSelector 컴포넌트 (드롭다운 연동)
-- ⬜ CommitFilterBar 컴포넌트 (작성자/기간/키워드 필터)
-- ⬜ CommitList + CommitItem 컴포넌트
-- ⬜ 더 불러오기 (Infinite Scroll)
-- ⬜ 로딩 스켈레톤 + 빈 상태 UI
-- ⬜ 마지막 선택 값 로컬 스토리지 저장
+- ✅ GitLab API 클라이언트 (src/api/gitlabClient.ts) 구현
+- ✅ useGitlabProjects, useGitlabBranches, useGitlabCommits 훅 구현
+- ✅ ProjectBranchSelector 컴포넌트 (드롭다운 연동)
+- ✅ CommitFilterBar 컴포넌트 (작성자/기간/키워드 필터)
+- ✅ CommitList + CommitItem 컴포넌트
+- ✅ 더 불러오기 (Intersection Observer 무한 스크롤)
+- ✅ 로딩 스켈레톤 + 빈 상태 UI
+- ✅ 마지막 선택 값 로컬 스토리지 저장
 
 ### 완료 기준
 
@@ -168,3 +169,4 @@
 |------|------|------|
 | v0.1 | 프로젝트 최초 설정 및 ROADMAP 작성 | 2026-03-13 |
 | v0.2 | Sprint 1 완료 — 프로젝트 기반 구축 (React + Vite + 레이아웃 + 설정 페이지) | 2026-03-13 |
+| v0.3 | Sprint 2 완료 — GitLab 커밋 이력 (API 훅, 무한 스크롤, 필터, 스켈레톤 UI) | 2026-03-13 |
