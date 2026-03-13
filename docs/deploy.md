@@ -7,7 +7,20 @@
 
 ## 현재 미완료 항목
 
-(초기 상태 — 스프린트/핫픽스 완료 후 sprint-close/hotfix-close agent가 업데이트합니다.)
+### Sprint 1 — 프로젝트 기반 구축 (2026-03-13)
+
+**자동 검증**
+
+- ⬜ Docker 미실행으로 자동 검증 미수행 (pytest, API curl, Playwright)
+
+**수동 검증 필요**
+
+- ⬜ `docker compose up --build` 로컬 스테이징 빌드 성공 확인
+- ⬜ 브라우저에서 사이드바 네비게이션 동작 확인 (/, /gitlab, /redmine, /settings)
+- ⬜ 설정 페이지 GitLab 토큰 입력 후 연결 테스트 성공 확인
+- ⬜ 설정 페이지 Redmine API 키 입력 후 연결 테스트 성공 확인
+- ⬜ 라이트 / 다크 / 시스템 테마 전환 동작 확인
+- ⬜ UI 디자인 / 시각적 품질 판단
 
 ---
 
