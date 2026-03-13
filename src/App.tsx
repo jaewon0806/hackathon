@@ -1,6 +1,7 @@
 import { Routes, Route } from 'react-router-dom'
 import { Sidebar } from '@/components/common/Sidebar'
 import { TopBar } from '@/components/common/TopBar'
+import { ChatbotPanel } from '@/components/chatbot/ChatbotPanel'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { GitlabPage } from '@/pages/GitlabPage'
 import { RedminePage } from '@/pages/RedminePage'
@@ -24,6 +25,7 @@ function AppLayout() {
           </Routes>
         </main>
       </div>
+      <ChatbotPanel />
     </div>
   )
 }
