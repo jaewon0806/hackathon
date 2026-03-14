@@ -1,0 +1,43 @@
+server {
+    listen 80;
+    server_name _;
+
+    root /usr/share/nginx/html;
+    index index.html;
+
+    # SPA 라우팅: 알 수 없는 경로는 index.html로 폴백
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # GitLab API 리버스 프록시
+    # /gitlab-api/* → ${VITE_GITLAB_URL}/api/v4/*
+    location /gitlab-api/ {
+        proxy_pass ${VITE_GITLAB_URL}/api/v4/;
+        proxy_set_header Host $proxy_host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header Authorization $http_authorization;
+        proxy_ssl_server_name on;
+    }
+
+    # Redmine API 리버스 프록시
+    # /redmine-api/* → ${VITE_REDMINE_URL}/*
+    location /redmine-api/ {
+        proxy_pass ${VITE_REDMINE_URL}/;
+        proxy_set_header Host $proxy_host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Redmine-API-Key $http_x_redmine_api_key;
+        proxy_ssl_server_name on;
+    }
+
+    # 정적 파일 캐싱
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+
+    # gzip 압축
+    gzip on;
+    gzip_types text/plain text/css application/javascript application/json image/svg+xml;
+    gzip_min_length 1024;
+}

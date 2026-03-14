@@ -1,0 +1,10 @@
+services:
+  dashboard:
+    image: ghcr.io/YOUR_GITHUB_ORG/dashboard-frontend:latest
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    environment:
+      # Nginx envsubst 템플릿에서 사용 (리버스 프록시 업스트림 URL)
+      VITE_GITLAB_URL: ${VITE_GITLAB_URL}
+      VITE_REDMINE_URL: ${VITE_REDMINE_URL}
