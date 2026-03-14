@@ -58,3 +58,23 @@ jobs:
           VITE_ANTHROPIC_API_KEY: ci-dummy-key
           VITE_CLAUDE_MODEL: claude-haiku-4-5
           VITE_DEFAULT_REFRESH_INTERVAL: "900"
+
+  docker-build:
+    name: Docker 이미지 빌드 검증
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+
+      - name: Docker Buildx 설정
+        uses: docker/setup-buildx-action@v3
+
+      - name: Docker 이미지 빌드 (push 없음)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          tags: dashboard:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
