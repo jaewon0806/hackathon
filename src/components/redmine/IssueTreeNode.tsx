@@ -84,6 +84,13 @@ export function IssueTreeNode({ node, depth = 0 }: Props) {
         {/* 마감일 */}
         <div className="shrink-0">{formatDate(node.due_date)}</div>
 
+        {/* 수정일 */}
+        {node.updated_on && (
+          <span className="text-xs text-gray-400 dark:text-gray-500 shrink-0 hidden sm:block">
+            수정 {`${new Date(node.updated_on).getMonth() + 1}/${new Date(node.updated_on).getDate()}`}
+          </span>
+        )}
+
         {/* 완료율 */}
         {node.done_ratio > 0 && (
           <div className="w-16 shrink-0 hidden md:flex items-center gap-1">
