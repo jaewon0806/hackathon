@@ -16,6 +16,7 @@
 | M4 | AI 챗봇 + 대시보드 홈 (Sprint 4) | ✅ 완료 |
 | M5 | UI 다듬기 + 배포 (Sprint 5) | ✅ 완료 |
 | M6 | API 키 온보딩 + 조회 버튼 + UI 모던화 (Sprint 6) | ✅ 완료 |
+| M7 | URL 고정 + 모델 단일화 + 작성자 드롭다운 (Sprint 7) | ✅ 완료 |
 
 ---
 
@@ -182,9 +183,36 @@
 
 ---
 
+## Sprint 7 — URL 고정 + 모델 단일화 + 작성자 드롭다운
+
+> **목표**: GitLab/Redmine URL을 환경변수 기반으로 고정, Claude 모델을 haiku-4-5 단일로 단순화, 대시보드와 GitLab 화면에 작성자 드롭다운 필터 추가
+> **상태**: ✅ 완료 (2026-03-15)
+> **브랜치**: `sprint7`
+
+### 작업 목록
+
+- ✅ SettingsPage — GitLab URL / Redmine URL 입력 필드 제거 (환경변수 고정)
+- ✅ SettingsPage — Claude 모델 select를 haiku-4-5 고정 텍스트로 교체
+- ✅ GitlabPage — 커밋 작성자 목록 useMemo 추출 + CommitFilterBar에 authors props 전달
+- ✅ CommitFilterBar — 작성자 text input을 select 드롭다운으로 교체
+- ✅ DashboardPage — 최근 활동 작성자 드롭다운 + filteredActivity 클라이언트 사이드 필터링
+- ✅ OnboardingModal — URL 입력 필드 제거, store URL 사용
+- ✅ App.tsx — needsOnboarding 조건에서 URL 항목 제거 (토큰/키만 확인)
+
+### 완료 기준
+
+- 설정 페이지에서 GitLab URL, Redmine URL 입력 필드가 표시되지 않음
+- Claude 모델 선택 드롭다운이 제거되고 haiku-4-5 고정 텍스트로 표시됨
+- GitLab 화면의 작성자 필터가 드롭다운으로 표시되고 커밋 목록에서 자동 추출됨
+- 대시보드 최근 활동 헤더에 작성자 드롭다운 표시 및 클라이언트 사이드 필터링 동작
+- `npm run build` 오류 없이 성공
+
+---
+
 ## 버전 히스토리
 
 | 버전 | 내용 | 날짜 |
 |------|------|------|
 | v0.1 | 프로젝트 최초 설정 및 ROADMAP 작성 | 2026-03-13 |
 | v0.6 | Sprint 6 완료 — 온보딩 모달 + 조회 버튼 + UI 모던화 | 2026-03-14 |
+| v0.7 | Sprint 7 완료 — URL 고정 + 모델 단일화 + 작성자 드롭다운 | 2026-03-15 |
