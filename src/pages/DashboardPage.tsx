@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ClipboardList, GitCommitHorizontal, PlayCircle, AlertTriangle, Settings } from 'lucide-react'
 import { useRedmineIssues } from '@/hooks/useRedmineIssues'
@@ -124,6 +124,21 @@ export function DashboardPage() {
     return activities
   }, [commits, issues])
 
+  // 작성자 드롭다운 상태 (임시 클라이언트 사이드 필터)
+  const [selectedAuthor, setSelectedAuthor] = useState('')
+
+  // 최근 활동에서 작성자 목록 추출 (중복 제거, 정렬)
+  const activityAuthors = useMemo(() => {
+    const names = recentActivity.map((a) => a.author).filter(Boolean)
+    return [...new Set(names)].sort()
+  }, [recentActivity])
+
+  // 선택된 작성자로 필터링 (빈 문자열 = 전체)
+  const filteredActivity = useMemo(() => {
+    if (!selectedAuthor) return recentActivity
+    return recentActivity.filter((a) => a.author === selectedAuthor)
+  }, [recentActivity, selectedAuthor])
+
   const isNotConfigured = !glToken && !rmApiKey
 
   return (
@@ -175,10 +190,24 @@ export function DashboardPage() {
 
       {/* 최근 활동 */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
-        <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
+        <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between gap-3">
           <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">최근 활동</h3>
+          {activityAuthors.length > 0 && (
+            <select
+              value={selectedAuthor}
+              onChange={(e) => setSelectedAuthor(e.target.value)}
+              className="px-2 py-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">전체 작성자</option>
+              {activityAuthors.map((author) => (
+                <option key={author} value={author}>
+                  {author}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
-        {recentActivity.length === 0 ? (
+        {filteredActivity.length === 0 ? (
           <div className="px-4 py-10 text-center text-sm text-gray-400">
             {issuesLoading || commitsLoading
               ? '데이터 로딩 중...'
@@ -186,7 +215,7 @@ export function DashboardPage() {
           </div>
         ) : (
           <ul className="divide-y divide-gray-50 dark:divide-gray-700">
-            {recentActivity.map((activity) => (
+            {filteredActivity.map((activity) => (
               <li key={`${activity.type}-${activity.id}`} className="flex items-center gap-3 px-4 py-3">
                 <span
                   className={`shrink-0 text-xs font-mono px-1.5 py-0.5 rounded ${

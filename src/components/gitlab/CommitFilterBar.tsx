@@ -1,7 +1,11 @@
 import { Search, SlidersHorizontal } from 'lucide-react'
 import { useGitlabStore } from '@/store/gitlabStore'
 
-export function CommitFilterBar() {
+interface CommitFilterBarProps {
+  authors?: string[]
+}
+
+export function CommitFilterBar({ authors = [] }: CommitFilterBarProps) {
   const { authorFilter, dateRange, keyword, setAuthorFilter, setDateRange, setKeyword, applyFilters } =
     useGitlabStore()
 
@@ -12,15 +16,19 @@ export function CommitFilterBar() {
 
   return (
     <div className="flex items-center gap-2 flex-wrap sm:flex-row flex-col sm:items-center">
-      {/* 작성자 필터 */}
-      <input
-        type="text"
+      {/* 작성자 필터 — 드롭다운 */}
+      <select
         value={authorFilter[0] ?? ''}
         onChange={(e) => setAuthorFilter(e.target.value ? [e.target.value] : [])}
-        onKeyDown={handleKeyDown}
-        placeholder="작성자"
-        className="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow w-full sm:w-32"
-      />
+        className="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow w-full sm:w-40"
+      >
+        <option value="">전체 작성자</option>
+        {authors.map((author) => (
+          <option key={author} value={author}>
+            {author}
+          </option>
+        ))}
+      </select>
 
       {/* 기간 필터 */}
       <div className="flex items-center gap-1.5 w-full sm:w-auto">

@@ -27,14 +27,11 @@ function AppLayout() {
   useTheme()
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
-  // API 키 설정 여부 확인 (GitLab 또는 Redmine 중 하나라도 비어있으면 모달 표시)
-  const gitlabUrl = useSettingsStore((s) => s.gitlab.url)
+  // API 키 설정 여부 확인 (URL은 환경변수 고정, 토큰/키만 확인)
   const gitlabToken = useSettingsStore((s) => s.gitlab.token)
-  const redmineUrl = useSettingsStore((s) => s.redmine.url)
   const redmineApiKey = useSettingsStore((s) => s.redmine.apiKey)
 
-  const needsOnboarding =
-    !gitlabUrl.trim() || !gitlabToken.trim() || !redmineUrl.trim() || !redmineApiKey.trim()
+  const needsOnboarding = !gitlabToken.trim() || !redmineApiKey.trim()
 
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900 overflow-hidden">

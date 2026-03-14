@@ -35,37 +35,14 @@ function PasswordInput({
   )
 }
 
-function TextInput({
-  value,
-  onChange,
-  placeholder,
-}: {
-  value: string
-  onChange: (v: string) => void
-  placeholder?: string
-}) {
-  return (
-    <input
-      type="text"
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder={placeholder}
-      className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-    />
-  )
-}
-
 export function SettingsPage() {
   const { showToast } = useToast()
   const store = useSettingsStore()
 
-  // 로컬 폼 상태
-  const [gitlabUrl, setGitlabUrl] = useState(store.gitlab.url)
+  // 로컬 폼 상태 (URL은 환경변수 고정이므로 제외)
   const [gitlabToken, setGitlabToken] = useState(store.gitlab.token)
-  const [redmineUrl, setRedmineUrl] = useState(store.redmine.url)
   const [redmineKey, setRedmineKey] = useState(store.redmine.apiKey)
   const [anthropicKey, setAnthropicKey] = useState(store.anthropic.apiKey)
-  const [claudeModel, setClaudeModel] = useState(store.anthropic.model)
   const [theme, setTheme] = useState<ThemeMode>(store.theme)
   const [refreshInterval, setRefreshInterval] = useState(store.refreshInterval)
 
@@ -74,7 +51,8 @@ export function SettingsPage() {
 
   const handleTestGitlab = async () => {
     setTestingGitlab(true)
-    const result = await testGitlabConnection(gitlabUrl, gitlabToken)
+    // URL은 환경변수에서 초기화된 store 값 사용
+    const result = await testGitlabConnection(store.gitlab.url, gitlabToken)
     setTestingGitlab(false)
     if (result.success) {
       showToast(`GitLab 연결 성공 (${result.username})`, 'success')
@@ -85,7 +63,8 @@ export function SettingsPage() {
 
   const handleTestRedmine = async () => {
     setTestingRedmine(true)
-    const result = await testRedmineConnection(redmineUrl, redmineKey)
+    // URL은 환경변수에서 초기화된 store 값 사용
+    const result = await testRedmineConnection(store.redmine.url, redmineKey)
     setTestingRedmine(false)
     if (result.success) {
       showToast(`Redmine 연결 성공 (${result.username})`, 'success')
@@ -95,9 +74,11 @@ export function SettingsPage() {
   }
 
   const handleSave = () => {
-    store.setGitlab({ url: gitlabUrl, token: gitlabToken })
-    store.setRedmine({ url: redmineUrl, apiKey: redmineKey })
-    store.setAnthropic({ apiKey: anthropicKey, model: claudeModel })
+    // URL은 변경하지 않고 토큰/키만 저장
+    store.setGitlab({ token: gitlabToken })
+    store.setRedmine({ apiKey: redmineKey })
+    // 모델은 haiku-4-5로 고정
+    store.setAnthropic({ apiKey: anthropicKey, model: 'claude-haiku-4-5' })
     store.setTheme(theme)
     store.setRefreshInterval(refreshInterval)
     showToast('설정이 저장되었습니다.', 'success')
@@ -117,16 +98,12 @@ export function SettingsPage() {
           <div className="p-4 space-y-3">
             <h4 className="font-medium text-gray-800 dark:text-gray-200 text-sm">GitLab</h4>
             <div>
-              <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">GitLab URL</label>
-              <TextInput value={gitlabUrl} onChange={setGitlabUrl} placeholder="https://gitlab.example.com" />
-            </div>
-            <div>
               <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Personal Access Token</label>
               <PasswordInput value={gitlabToken} onChange={setGitlabToken} placeholder="glpat-xxxxxxxxxxxx" />
             </div>
             <button
               onClick={handleTestGitlab}
-              disabled={testingGitlab || !gitlabUrl || !gitlabToken}
+              disabled={testingGitlab || !store.gitlab.url || !gitlabToken}
               className="flex items-center gap-2 px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {testingGitlab && <Loader2 size={14} className="animate-spin" />}
@@ -138,16 +115,12 @@ export function SettingsPage() {
           <div className="p-4 space-y-3">
             <h4 className="font-medium text-gray-800 dark:text-gray-200 text-sm">Redmine</h4>
             <div>
-              <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Redmine URL</label>
-              <TextInput value={redmineUrl} onChange={setRedmineUrl} placeholder="https://redmine.example.com" />
-            </div>
-            <div>
               <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">API Access Key</label>
               <PasswordInput value={redmineKey} onChange={setRedmineKey} placeholder="API 액세스 키" />
             </div>
             <button
               onClick={handleTestRedmine}
-              disabled={testingRedmine || !redmineUrl || !redmineKey}
+              disabled={testingRedmine || !store.redmine.url || !redmineKey}
               className="flex items-center gap-2 px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {testingRedmine && <Loader2 size={14} className="animate-spin" />}
@@ -164,14 +137,10 @@ export function SettingsPage() {
             </div>
             <div>
               <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Claude 모델</label>
-              <select
-                value={claudeModel}
-                onChange={(e) => setClaudeModel(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="claude-haiku-4-5">claude-haiku-4-5 (빠름/저렴)</option>
-                <option value="claude-sonnet-4-6">claude-sonnet-4-6 (정확/상세)</option>
-              </select>
+              {/* 모델은 haiku-4-5 단일 고정 */}
+              <p className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm">
+                claude-haiku-4-5 (빠름/저렴)
+              </p>
             </div>
           </div>
         </div>

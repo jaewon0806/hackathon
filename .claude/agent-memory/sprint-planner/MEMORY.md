@@ -15,8 +15,9 @@
 | Sprint 4 | AI 챗봇 + 대시보드 홈 | ✅ 완료 | 2026-03-13 |
 | Sprint 5 | UI 다듬기 + 배포 | ✅ 완료 | 2026-03-13 |
 | Sprint 6 | API 키 온보딩 + 조회 버튼 + UI 모던화 | ✅ 완료 | 2026-03-14 |
+| Sprint 7 | URL 고정 + 모델 단일화 + 작성자 드롭다운 | 계획 수립 완료 | - |
 
-**다음 사용 가능한 스프린트 번호**: Sprint 7
+**다음 사용 가능한 스프린트 번호**: Sprint 8
 
 ---
 
@@ -44,3 +45,6 @@
 - **인프라 변경**: Sprint 5에서 Docker/Nginx → Vercel로 전환. `docker compose up --build` 스테이징 검증 절차는 더 이상 해당 없음.
 - **appliedFilter 패턴**: Sprint 6에서 gitlabStore/redmineStore에 draft/applied 이중 상태 구조 도입. 드래프트는 입력 즉시 반영, applied는 조회 버튼 클릭 시 복사. 새 필터 기능 추가 시 동일 패턴 준수 필요.
 - **OnboardingModal 표시 조건**: `App.tsx`에서 `needsOnboarding` 변수로 GitLab URL + Token + Redmine URL + apiKey 4개 모두 채워져야 모달이 닫힘. 새 필수 API 키 추가 시 조건 업데이트 필요.
+- **Sprint 7 설계 결정**: GitLab/Redmine URL이 환경변수 기반으로 고정됨에 따라 SettingsPage, OnboardingModal 두 곳 모두에서 URL 입력 필드 제거 필요. App.tsx의 needsOnboarding 조건도 URL 항목 제거 필요.
+- **GitLab 작성자 드롭다운**: CommitFilterBar는 `authors?: string[]` props를 받아 드롭다운 렌더링. 작성자 목록은 GitlabPage에서 현재 커밋 `author_name` 기반으로 추출 (클라이언트 사이드, API 추가 호출 없음).
+- **Dashboard 작성자 필터**: useState 로컬 상태로 관리 (store 미사용). recentActivity에서 작성자 목록 추출, filteredActivity useMemo로 클라이언트 사이드 필터링. 임시 구현으로 명시.

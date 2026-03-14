@@ -34,27 +34,6 @@ function PasswordInput({
   )
 }
 
-// 텍스트 입력 컴포넌트 (URL 입력용)
-function TextInput({
-  value,
-  onChange,
-  placeholder,
-}: {
-  value: string
-  onChange: (v: string) => void
-  placeholder?: string
-}) {
-  return (
-    <input
-      type="text"
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder={placeholder}
-      className="w-full px-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
-    />
-  )
-}
-
 // 스텝 인디케이터
 function StepIndicator({ current, total }: { current: number; total: number }) {
   return (
@@ -82,15 +61,13 @@ export function OnboardingModal() {
 
   const [step, setStep] = useState(0)
 
-  // GitLab 입력 상태
-  const [gitlabUrl, setGitlabUrl] = useState(store.gitlab.url)
+  // GitLab 입력 상태 (URL은 환경변수 고정이므로 제외)
   const [gitlabToken, setGitlabToken] = useState(store.gitlab.token)
   const [testingGitlab, setTestingGitlab] = useState(false)
   const [gitlabStatus, setGitlabStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const [gitlabMessage, setGitlabMessage] = useState('')
 
-  // Redmine 입력 상태
-  const [redmineUrl, setRedmineUrl] = useState(store.redmine.url)
+  // Redmine 입력 상태 (URL은 환경변수 고정이므로 제외)
   const [redmineKey, setRedmineKey] = useState(store.redmine.apiKey)
   const [testingRedmine, setTestingRedmine] = useState(false)
   const [redmineStatus, setRedmineStatus] = useState<'idle' | 'success' | 'error'>('idle')
@@ -102,7 +79,8 @@ export function OnboardingModal() {
   const handleTestGitlab = async () => {
     setTestingGitlab(true)
     setGitlabStatus('idle')
-    const result = await testGitlabConnection(gitlabUrl, gitlabToken)
+    // URL은 환경변수에서 초기화된 store 값 사용
+    const result = await testGitlabConnection(store.gitlab.url, gitlabToken)
     setTestingGitlab(false)
     if (result.success) {
       setGitlabStatus('success')
@@ -116,7 +94,8 @@ export function OnboardingModal() {
   const handleTestRedmine = async () => {
     setTestingRedmine(true)
     setRedmineStatus('idle')
-    const result = await testRedmineConnection(redmineUrl, redmineKey)
+    // URL은 환경변수에서 초기화된 store 값 사용
+    const result = await testRedmineConnection(store.redmine.url, redmineKey)
     setTestingRedmine(false)
     if (result.success) {
       setRedmineStatus('success')
@@ -130,29 +109,29 @@ export function OnboardingModal() {
   const handleNext = () => {
     // 현재 단계 데이터 저장 후 다음 단계로
     if (step === 0) {
-      store.setGitlab({ url: gitlabUrl, token: gitlabToken })
+      store.setGitlab({ token: gitlabToken })
     } else if (step === 1) {
-      store.setRedmine({ url: redmineUrl, apiKey: redmineKey })
+      store.setRedmine({ apiKey: redmineKey })
     }
     setStep((s) => s + 1)
   }
 
   const handleSkipAnthropic = () => {
     // Anthropic 건너뛰기 — store에 빈값 유지 (변경 없음)
-    store.setGitlab({ url: gitlabUrl, token: gitlabToken })
-    store.setRedmine({ url: redmineUrl, apiKey: redmineKey })
+    store.setGitlab({ token: gitlabToken })
+    store.setRedmine({ apiKey: redmineKey })
   }
 
   const handleFinish = () => {
-    store.setGitlab({ url: gitlabUrl, token: gitlabToken })
-    store.setRedmine({ url: redmineUrl, apiKey: redmineKey })
+    store.setGitlab({ token: gitlabToken })
+    store.setRedmine({ apiKey: redmineKey })
     store.setAnthropic({ apiKey: anthropicKey })
   }
 
-  // 다음 버튼 활성화 조건
+  // 다음 버튼 활성화 조건 (URL 제거 후 토큰/키만 확인)
   const canProceed = () => {
-    if (step === 0) return !!gitlabUrl.trim() && !!gitlabToken.trim()
-    if (step === 1) return !!redmineUrl.trim() && !!redmineKey.trim()
+    if (step === 0) return !!gitlabToken.trim()
+    if (step === 1) return !!redmineKey.trim()
     return true
   }
 
@@ -164,8 +143,8 @@ export function OnboardingModal() {
         <div className="text-center mb-2">
           <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">업무 대시보드 설정</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            {step === 0 && 'GitLab 연결 정보를 입력하세요.'}
-            {step === 1 && 'Redmine 연결 정보를 입력하세요.'}
+            {step === 0 && 'GitLab Personal Access Token을 입력하세요.'}
+            {step === 1 && 'Redmine API Access Key를 입력하세요.'}
             {step === 2 && 'Claude AI 챗봇 설정 (선택 사항)'}
           </p>
         </div>
@@ -180,16 +159,6 @@ export function OnboardingModal() {
             <>
               <div>
                 <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">
-                  GitLab URL
-                </label>
-                <TextInput
-                  value={gitlabUrl}
-                  onChange={setGitlabUrl}
-                  placeholder="https://gitlab.example.com"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">
                   Personal Access Token
                 </label>
                 <PasswordInput
@@ -200,7 +169,7 @@ export function OnboardingModal() {
               </div>
               <button
                 onClick={handleTestGitlab}
-                disabled={testingGitlab || !gitlabUrl || !gitlabToken}
+                disabled={testingGitlab || !store.gitlab.url || !gitlabToken}
                 className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {testingGitlab && <Loader2 size={14} className="animate-spin" />}
@@ -220,16 +189,6 @@ export function OnboardingModal() {
             <>
               <div>
                 <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">
-                  Redmine URL
-                </label>
-                <TextInput
-                  value={redmineUrl}
-                  onChange={setRedmineUrl}
-                  placeholder="https://redmine.example.com"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">
                   API Access Key
                 </label>
                 <PasswordInput
@@ -240,7 +199,7 @@ export function OnboardingModal() {
               </div>
               <button
                 onClick={handleTestRedmine}
-                disabled={testingRedmine || !redmineUrl || !redmineKey}
+                disabled={testingRedmine || !store.redmine.url || !redmineKey}
                 className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {testingRedmine && <Loader2 size={14} className="animate-spin" />}

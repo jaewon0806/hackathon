@@ -38,6 +38,12 @@ export function GitlabPage() {
 
   const commits = useMemo(() => data?.pages.flat() ?? [], [data])
 
+  // 현재 조회된 커밋에서 작성자 목록 추출 (중복 제거, 알파벳 정렬)
+  const authors = useMemo(() => {
+    const names = commits.map((c) => c.author_name).filter(Boolean)
+    return [...new Set(names)].sort()
+  }, [commits])
+
   // API 미설정 안내
   if (!token) {
     return (
@@ -60,7 +66,7 @@ export function GitlabPage() {
       {/* 필터 영역 — 카드화 + 그림자 */}
       <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 space-y-3 shadow-sm">
         <ProjectBranchSelector />
-        {selectedProjectId && <CommitFilterBar />}
+        {selectedProjectId && <CommitFilterBar authors={authors} />}
       </div>
 
       {/* 커밋 목록 */}
