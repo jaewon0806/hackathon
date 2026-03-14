@@ -5,26 +5,20 @@
 
 ---
 
-## 현재 미완료 항목 — Sprint 6 (2026-03-14)
+### Hotfix: 날짜 표시 형식을 M/D (N시간 전) 형식으로 개선 (2026-03-15)
 
-### 자동 검증
+PR: https://github.com/jaewon0806/hackathon/compare/develop...hotfix/date-display
+(gh CLI 미설치로 자동 생성 불가 — 아래 URL로 GitHub에서 직접 PR 생성 필요)
 
-- ✅ `npm run build` 빌드 성공 확인
-- ⬜ Docker 미실행으로 pytest 자동 검증 미수행
-- ⬜ Docker 미실행으로 API curl/httpx 검증 미수행
-- ⬜ Docker 미실행으로 데모 모드 API 검증 미수행
-- ⬜ Docker 미실행으로 Playwright UI 자동 검증 미수행
+- ✅ 자동 검증 완료 항목:
+  - `npm run build`: 성공
 
-### 수동 검증 필요 항목
-
-- ⬜ `npm run dev` 실행 후 최초 접속 시 온보딩 모달 표시 확인
-  - GitLab/Redmine/Anthropic 3단계 순서 진행 확인
-  - 연결 테스트 버튼 동작 확인
-  - Anthropic 건너뛰기 후 대시보드 진입 확인
-- ⬜ CommitFilterBar 조회 버튼 클릭 및 Enter 키 입력 시에만 API 호출 발생 확인
-- ⬜ IssueFilterBar 동일 동작 확인
-- ⬜ UI 시각적 품질 확인 (커스텀 스크롤바, Sidebar 그라데이션, TopBar backdrop-blur)
-- ⬜ `docker compose up --build` 스테이징 검증 (develop 머지 후)
+- ⬜ 수동 검증 필요 항목:
+  - GitHub에서 PR 직접 생성: `hotfix/date-display` → `develop`
+  - `npm run dev` 실행 후 대시보드 최근 활동 날짜 형식 확인 ("M/D (N시간 전)" 형식)
+  - GitLab 커밋 목록에서 날짜 형식 동일 확인
+  - Redmine 이슈 트리에서 수정일 표시 확인 (sm 브레이크포인트 이상)
+  - `docker compose up --build` (코드 반영)
 
 ---
 
