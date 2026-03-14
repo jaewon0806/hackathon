@@ -234,6 +234,21 @@ export function OnboardingModal() {
           )}
         </div>
 
+        {/* 데모 모드 안내 (Step 0에서만 표시) */}
+        {step === 0 && import.meta.env.VITE_DEMO_MODE === 'true' && (
+          <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-xl flex items-center justify-between gap-2">
+            <span className="text-xs text-amber-700 dark:text-amber-300">
+              API 키 없이 샘플 데이터로 체험할 수 있습니다.
+            </span>
+            <button
+              onClick={handleFinish}
+              className="shrink-0 text-xs font-medium text-amber-700 dark:text-amber-300 underline hover:no-underline"
+            >
+              데모로 시작
+            </button>
+          </div>
+        )}
+
         {/* 하단 버튼 영역 */}
         <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-100 dark:border-gray-800">
           {/* 이전 버튼 */}

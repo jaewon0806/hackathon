@@ -31,7 +31,8 @@ function AppLayout() {
   const gitlabToken = useSettingsStore((s) => s.gitlab.token)
   const redmineApiKey = useSettingsStore((s) => s.redmine.apiKey)
 
-  const needsOnboarding = !gitlabToken.trim() || !redmineApiKey.trim()
+  const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true'
+  const needsOnboarding = !isDemoMode && (!gitlabToken.trim() || !redmineApiKey.trim())
 
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900 overflow-hidden">

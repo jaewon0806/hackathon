@@ -1,5 +1,7 @@
 # 업무 대시보드 (Daily Work Dashboard)
 
+[![CI](https://github.com/frogy95/choiji-guide-big/actions/workflows/ci.yml/badge.svg)](https://github.com/frogy95/choiji-guide-big/actions/workflows/ci.yml)
+
 > GitLab 커밋 이력 + Redmine 일감 + Claude AI 챗봇을 통합한 업무 현황 대시보드
 
 매일 출근 후 **오늘 해야 할 일과 팀의 진행 상황**을 한 화면에서 빠르게 파악할 수 있는 SPA입니다.
@@ -148,17 +150,52 @@ git checkout main -b hotfix/{설명}
 
 ### CI (`ci.yml`) — PR to develop/main 시 자동 실행
 
-| Job | 내용 |
-|-----|------|
-| `lint-and-typecheck` | ESLint (`--max-warnings 0`) + TypeScript strict 타입 체크 |
-| `build` | Vite 프로덕션 빌드 검증 (더미 환경변수 주입) |
-| `docker-build` | Dockerfile 빌드 성공 여부 확인 |
+| Job | 의존 | 내용 |
+|-----|------|------|
+| `lint-and-typecheck` | — | ESLint (`--max-warnings 0`) + TypeScript strict 타입 체크 |
+| `test` | lint-and-typecheck | Vitest 단위 테스트 45건 (utils, store, api) |
+| `build` | lint-and-typecheck, test | Vite 프로덕션 빌드 검증 (더미 환경변수 주입) |
+| `docker-build` | — | Dockerfile 빌드 성공 여부 확인 |
 
 ### CD (`deploy.yml`) — main push 시 자동 실행
 
 1. Docker 이미지 빌드 (React SPA → Nginx 서빙)
 2. GHCR(GitHub Container Registry)에 이미지 push (`latest` + `{commit-sha}` 태그)
 3. SSH로 프로덕션 서버 접속 → `docker compose pull && docker compose up -d`
+
+---
+
+## 데모 모드
+
+API 키 없이 샘플 데이터로 전체 기능을 체험할 수 있습니다.
+
+```bash
+# 데모 모드로 개발 서버 실행
+VITE_DEMO_MODE=true npm run dev
+```
+
+데모 모드에서는:
+- GitLab/Redmine/Anthropic API를 실제로 호출하지 않습니다
+- 미리 준비된 한국어 샘플 데이터가 모든 화면에 자동으로 표시됩니다
+- 온보딩 모달이 표시되지 않습니다 (API 키 불필요)
+- 챗봇 제외 모든 기능(필터, 조회, 트리 뷰 등)이 정상 동작합니다
+
+---
+
+## 경쟁 도구 비교
+
+| 항목 | 본 대시보드 | Jira | Linear | Asana |
+|------|-----------|------|--------|-------|
+| GitLab 커밋 조회 | ✅ 내장 | ❌ (플러그인) | ❌ | ❌ |
+| Redmine 연동 | ✅ 내장 | ❌ | ❌ | ❌ |
+| AI 자연어 질의 | ✅ Claude 챗봇 | ⚠️ 유료 Atlassian AI | ⚠️ Linear AI (영문) | ⚠️ 유료 |
+| 설치 인프라 | 브라우저 SPA | SaaS/서버 | SaaS | SaaS |
+| 데이터 외부 전송 | ❌ (사내망 유지) | ✅ (클라우드) | ✅ (클라우드) | ✅ (클라우드) |
+| 온프레미스 GitLab | ✅ | ⚠️ Data Center 필요 | ❌ | ❌ |
+| 커스텀 필터/트리 뷰 | ✅ | ⚠️ 복잡한 JQL | ⚠️ 제한적 | ⚠️ 제한적 |
+| 라이선스 비용 | 무료 (오픈소스) | 유료 | 유료 | 유료 |
+
+> 사내망 GitLab + Redmine 환경에서 데이터를 외부로 내보내지 않으면서 AI 어시스턴트를 활용할 수 있는 유일한 통합 솔루션입니다.
 
 ---
 

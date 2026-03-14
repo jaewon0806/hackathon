@@ -30,9 +30,37 @@ jobs:
       - name: TypeScript 타입 체크
         run: npm run typecheck
 
+  test:
+    name: Vitest 단위 테스트
+    runs-on: ubuntu-latest
+    needs: lint-and-typecheck
+
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+
+      - name: Node.js 20 설정
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: 의존성 설치
+        run: npm ci
+
+      - name: 단위 테스트 실행
+        run: npm test
+        env:
+          VITE_GITLAB_URL: https://gitlab.example.com
+          VITE_REDMINE_URL: https://redmine.example.com
+          VITE_ANTHROPIC_API_KEY: test-key
+          VITE_CLAUDE_MODEL: claude-haiku-4-5
+          VITE_DEMO_MODE: "false"
+
   build:
     name: Vite 프로덕션 빌드 검증
     runs-on: ubuntu-latest
+    needs: [lint-and-typecheck, test]
 
     steps:
       - name: 코드 체크아웃
