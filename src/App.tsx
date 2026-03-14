@@ -4,7 +4,9 @@ import { Sidebar } from '@/components/common/Sidebar'
 import { TopBar } from '@/components/common/TopBar'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary'
 import { ChatbotPanel } from '@/components/chatbot/ChatbotPanel'
+import { OnboardingModal } from '@/components/common/OnboardingModal'
 import { useTheme } from '@/hooks/useTheme'
+import { useSettingsStore } from '@/store/settingsStore'
 
 const DashboardPage = lazy(() => import('@/pages/DashboardPage').then((m) => ({ default: m.DashboardPage })))
 const GitlabPage = lazy(() => import('@/pages/GitlabPage').then((m) => ({ default: m.GitlabPage })))
@@ -25,6 +27,15 @@ function AppLayout() {
   useTheme()
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
+  // API 키 설정 여부 확인 (GitLab 또는 Redmine 중 하나라도 비어있으면 모달 표시)
+  const gitlabUrl = useSettingsStore((s) => s.gitlab.url)
+  const gitlabToken = useSettingsStore((s) => s.gitlab.token)
+  const redmineUrl = useSettingsStore((s) => s.redmine.url)
+  const redmineApiKey = useSettingsStore((s) => s.redmine.apiKey)
+
+  const needsOnboarding =
+    !gitlabUrl.trim() || !gitlabToken.trim() || !redmineUrl.trim() || !redmineApiKey.trim()
+
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900 overflow-hidden">
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
@@ -44,6 +55,9 @@ function AppLayout() {
         </main>
       </div>
       <ChatbotPanel />
+
+      {/* 온보딩 모달 — API 키 미설정 시 표시 (store 업데이트로 자동 해소) */}
+      {needsOnboarding && <OnboardingModal />}
     </div>
   )
 }

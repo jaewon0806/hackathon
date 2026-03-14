@@ -25,26 +25,35 @@ interface SummaryCardProps {
   isLoading?: boolean
 }
 
-const colorMap = {
-  blue: 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20',
-  purple: 'text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20',
-  yellow: 'text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/20',
-  red: 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20',
+// 아이콘 배경 그라데이션 매핑
+const gradientMap = {
+  blue: 'from-blue-500 to-blue-600',
+  purple: 'from-purple-500 to-purple-600',
+  yellow: 'from-yellow-400 to-yellow-500',
+  red: 'from-red-500 to-red-600',
+}
+
+const textColorMap = {
+  blue: 'text-blue-600 dark:text-blue-400',
+  purple: 'text-purple-600 dark:text-purple-400',
+  yellow: 'text-yellow-600 dark:text-yellow-400',
+  red: 'text-red-600 dark:text-red-400',
 }
 
 function SummaryCard({ icon: Icon, label, value, color, isLoading }: SummaryCardProps) {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-default">
       <div className="flex items-center justify-between mb-3">
         <p className="text-sm text-gray-500 dark:text-gray-400">{label}</p>
-        <div className={`p-2 rounded-lg ${colorMap[color]}`}>
-          <Icon size={16} className={colorMap[color].split(' ')[0]} />
+        {/* 아이콘 배경 그라데이션 */}
+        <div className={`p-2 rounded-lg bg-gradient-to-br ${gradientMap[color]}`}>
+          <Icon size={16} className="text-white" />
         </div>
       </div>
       {isLoading ? (
         <div className="h-8 w-12 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
       ) : (
-        <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">{value}</p>
+        <p className={`text-2xl font-bold ${textColorMap[color]}`}>{value}</p>
       )}
     </div>
   )
@@ -55,15 +64,16 @@ export function DashboardPage() {
   const glToken = useSettingsStore((s) => s.gitlab.token)
   const rmApiKey = useSettingsStore((s) => s.redmine.apiKey)
   const { selectedProjectId: rmProjectId, selectedVersionId } = useRedmineStore()
-  const { selectedProjectId: glProjectId, selectedBranch, dateRange } = useGitlabStore()
+  const { selectedProjectId: glProjectId, selectedBranch, appliedDateRange } = useGitlabStore()
 
   const { data: issues = [], isLoading: issuesLoading } = useRedmineIssues(rmProjectId, selectedVersionId)
   const { data: commitsData, isLoading: commitsLoading } = useGitlabCommits(
     glProjectId,
     selectedBranch,
     {
-      since: dateRange.from ? `${dateRange.from}T00:00:00Z` : undefined,
-      until: dateRange.to ? `${dateRange.to}T23:59:59Z` : undefined,
+      // 적용된 날짜 범위 사용
+      since: appliedDateRange.from ? `${appliedDateRange.from}T00:00:00Z` : undefined,
+      until: appliedDateRange.to ? `${appliedDateRange.to}T23:59:59Z` : undefined,
     }
   )
   const commits = useMemo(() => commitsData?.pages.flat() ?? [], [commitsData])
@@ -129,8 +139,8 @@ export function DashboardPage() {
         </div>
       )}
 
-      {/* 요약 카드 */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      {/* 요약 카드 — 반응형 그리드 */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <SummaryCard
           icon={ClipboardList}
           label="담당 일감"
@@ -162,7 +172,7 @@ export function DashboardPage() {
       </div>
 
       {/* 최근 활동 */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
         <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
           <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">최근 활동</h3>
         </div>

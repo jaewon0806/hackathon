@@ -2,13 +2,20 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
 interface RedmineState {
+  // 선택 상태 (즉시 반영)
   selectedProjectId: number | null
   selectedVersionId: number | null
+  expandedIssueIds: number[]
+  // 드래프트 필터 (입력 중)
   assigneeFilter: number[]
   statusFilter: string[]
   priorityFilter: string[]
   keyword: string
-  expandedIssueIds: number[]
+  // 적용된 필터 ("조회" 버튼 클릭 시 반영)
+  appliedStatusFilter: string[]
+  appliedPriorityFilter: string[]
+  appliedKeyword: string
+  // 액션
   setSelectedProjectId: (id: number | null) => void
   setSelectedVersionId: (id: number | null) => void
   setAssigneeFilter: (ids: number[]) => void
@@ -17,11 +24,12 @@ interface RedmineState {
   setKeyword: (keyword: string) => void
   toggleIssueExpanded: (id: number) => void
   setExpandedIssueIds: (ids: number[]) => void
+  applyFilters: () => void
 }
 
 export const useRedmineStore = create<RedmineState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       selectedProjectId: null,
       selectedVersionId: null,
       assigneeFilter: [],
@@ -29,6 +37,10 @@ export const useRedmineStore = create<RedmineState>()(
       priorityFilter: [],
       keyword: '',
       expandedIssueIds: [],
+      // 초기값: applied = draft (첫 로딩 시 기본 필터가 즉시 적용되도록)
+      appliedStatusFilter: [],
+      appliedPriorityFilter: [],
+      appliedKeyword: '',
       setSelectedProjectId: (id: number | null) => set({ selectedProjectId: id, selectedVersionId: null }),
       setSelectedVersionId: (id: number | null) => set({ selectedVersionId: id }),
       setAssigneeFilter: (ids: number[]) => set({ assigneeFilter: ids }),
@@ -42,6 +54,15 @@ export const useRedmineStore = create<RedmineState>()(
             : [...state.expandedIssueIds, id],
         })),
       setExpandedIssueIds: (ids: number[]) => set({ expandedIssueIds: ids }),
+      // 드래프트 → 적용 상태로 복사
+      applyFilters: () => {
+        const { statusFilter, priorityFilter, keyword } = get()
+        set({
+          appliedStatusFilter: statusFilter,
+          appliedPriorityFilter: priorityFilter,
+          appliedKeyword: keyword,
+        })
+      },
     }),
     {
       name: 'redmine_last_selection',

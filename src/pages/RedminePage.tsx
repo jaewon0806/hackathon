@@ -29,23 +29,30 @@ function IssueSkeleton() {
 
 export function RedminePage() {
   const apiKey = useSettingsStore((s) => s.redmine.apiKey)
-  const { selectedProjectId, selectedVersionId, statusFilter, priorityFilter, keyword } = useRedmineStore()
+  const {
+    selectedProjectId,
+    selectedVersionId,
+    // 적용된 필터 사용 (조회 버튼 클릭 후 반영)
+    appliedStatusFilter,
+    appliedPriorityFilter,
+    appliedKeyword,
+  } = useRedmineStore()
 
   useAutoRefresh([['redmine', 'projects'], ['redmine', 'issues']])
 
   const { data: issues = [], isLoading, isError, error } = useRedmineIssues(selectedProjectId, selectedVersionId)
 
-  // 트리 구성 + 필터 적용
+  // 트리 구성 + 적용된 필터 반영
   const filteredTree = useMemo(() => {
     const tree = buildIssueTree(issues)
-    if (statusFilter.length === 0 && priorityFilter.length === 0 && !keyword) return tree
+    if (appliedStatusFilter.length === 0 && appliedPriorityFilter.length === 0 && !appliedKeyword) return tree
     return filterIssueTree(tree, (node) => {
-      if (statusFilter.length > 0 && !statusFilter.includes(node.status.name)) return false
-      if (priorityFilter.length > 0 && !priorityFilter.includes(node.priority.name)) return false
-      if (keyword && !node.subject.toLowerCase().includes(keyword.toLowerCase())) return false
+      if (appliedStatusFilter.length > 0 && !appliedStatusFilter.includes(node.status.name)) return false
+      if (appliedPriorityFilter.length > 0 && !appliedPriorityFilter.includes(node.priority.name)) return false
+      if (appliedKeyword && !node.subject.toLowerCase().includes(appliedKeyword.toLowerCase())) return false
       return true
     })
-  }, [issues, statusFilter, priorityFilter, keyword])
+  }, [issues, appliedStatusFilter, appliedPriorityFilter, appliedKeyword])
 
   if (!apiKey) {
     return (
@@ -62,8 +69,8 @@ export function RedminePage() {
 
   return (
     <div className="flex flex-col h-full">
-      {/* 필터 영역 */}
-      <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 space-y-3">
+      {/* 필터 영역 — 카드화 + 그림자 */}
+      <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 space-y-3 shadow-sm">
         <ProjectVersionSelector />
 
         {selectedProjectId && issues.length > 0 && (

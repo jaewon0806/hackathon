@@ -12,16 +12,23 @@ import { useAutoRefresh } from '@/hooks/useAutoRefresh'
 
 export function GitlabPage() {
   const token = useSettingsStore((s) => s.gitlab.token)
-  const { selectedProjectId, selectedBranch, authorFilter, dateRange, keyword } = useGitlabStore()
+  const {
+    selectedProjectId,
+    selectedBranch,
+    // 적용된 필터 사용 (조회 버튼 클릭 후 반영)
+    appliedAuthorFilter,
+    appliedDateRange,
+    appliedKeyword,
+  } = useGitlabStore()
 
   const filters = useMemo(
     () => ({
-      author: authorFilter[0],
-      since: dateRange.from ? `${dateRange.from}T00:00:00Z` : undefined,
-      until: dateRange.to ? `${dateRange.to}T23:59:59Z` : undefined,
-      search: keyword || undefined,
+      author: appliedAuthorFilter[0],
+      since: appliedDateRange.from ? `${appliedDateRange.from}T00:00:00Z` : undefined,
+      until: appliedDateRange.to ? `${appliedDateRange.to}T23:59:59Z` : undefined,
+      search: appliedKeyword || undefined,
     }),
-    [authorFilter, dateRange, keyword]
+    [appliedAuthorFilter, appliedDateRange, appliedKeyword]
   )
 
   useAutoRefresh([['gitlab', 'projects'], ['gitlab', 'commits']])
@@ -50,8 +57,8 @@ export function GitlabPage() {
 
   return (
     <div className="flex flex-col h-full">
-      {/* 필터 영역 */}
-      <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 space-y-3">
+      {/* 필터 영역 — 카드화 + 그림자 */}
+      <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 space-y-3 shadow-sm">
         <ProjectBranchSelector />
         {selectedProjectId && <CommitFilterBar />}
       </div>

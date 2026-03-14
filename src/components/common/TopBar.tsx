@@ -18,7 +18,8 @@ export function TopBar({ onMenuClick }: Props) {
   const title = pageTitles[location.pathname] || '업무 대시보드'
 
   return (
-    <header className="h-12 px-4 flex items-center justify-between border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shrink-0">
+    // backdrop-blur + 하단 보더 대신 미세한 그림자
+    <header className="h-12 px-4 flex items-center justify-between bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm shadow-sm shrink-0 sticky top-0 z-20">
       <div className="flex items-center gap-3">
         {onMenuClick && (
           <button
