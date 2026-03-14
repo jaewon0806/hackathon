@@ -16,8 +16,7 @@
 | Sprint 5 | UI 다듬기 + 배포 | ✅ 완료 | 2026-03-13 |
 | Sprint 6 | API 키 온보딩 + 조회 버튼 + UI 모던화 | ✅ 완료 | 2026-03-14 |
 | Sprint 7 | URL 고정 + 모델 단일화 + 작성자 드롭다운 | ✅ 완료 | 2026-03-15 |
-
-| Sprint 8 | 대시보드 카드 상세 패널 + 최근 활동 링크 + 기간 필터 | ✅ 완료 | 2026-03-15 |
+| Sprint 8 | Vitest 테스트 인프라 + 데모 모드 + CI 강화 + 문서 경쟁분석 | ✅ 완료 | 2026-03-15 |
 
 **다음 사용 가능한 스프린트 번호**: Sprint 9
 
@@ -54,3 +53,6 @@
 - **Dashboard 기간 필터**: `activityPeriodDays` useState(기본 7)로 로컬 관리. recentActivity useMemo 내 cutoff 계산 후 filter 적용. 기간 필터 후 작성자 필터 순으로 적용.
 - **recentActivity url 필드**: Sprint 8에서 추가. 커밋 = `c.web_url`, 이슈 = `redmineUrl ? \`${redmineUrl}/issues/${id}\` : undefined`. url 없으면 링크 미표시 (span fallback).
 - **z-index 레이어**: SummaryDetailPanel 오버레이 z-40, 패널 z-50. ChatbotPanel z-index와 충돌 여부 확인 필요.
+- **Vitest 테스트 인프라 (Sprint 8)**: `vitest.config.ts` + `src/test/setup.ts` 설정 완료. 45건 단위 테스트. `tsconfig.app.json`에서 테스트 파일 exclude 처리 (빌드 타겟 오염 방지). `npm test` = `vitest run` (watch 모드 아님).
+- **데모 모드 (Sprint 8)**: `VITE_DEMO_MODE=true` 환경변수로 활성화. 6개 훅 모두 mock 분기 처리. App.tsx의 needsOnboarding 조건에서 isDemoMode 체크 추가. 새 훅 추가 시 isDemoMode 분기 동일하게 적용 필요.
+- **CI 파이프라인 (Sprint 8)**: `.github/workflows/ci.yml`에 test 잡 추가. lint-and-typecheck → test → build 의존 체인. test 잡에 VITE_* 환경변수 더미값 필요 (GitHub Actions secrets 또는 하드코딩).
