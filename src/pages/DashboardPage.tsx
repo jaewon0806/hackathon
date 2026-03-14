@@ -1,12 +1,14 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ClipboardList, GitCommitHorizontal, PlayCircle, AlertTriangle, Settings } from 'lucide-react'
+import { ClipboardList, GitCommitHorizontal, PlayCircle, AlertTriangle, Settings, ExternalLink } from 'lucide-react'
 import { useRedmineIssues } from '@/hooks/useRedmineIssues'
 import { useGitlabCommits } from '@/hooks/useGitlabCommits'
 import { useRedmineStore } from '@/store/redmineStore'
 import { useGitlabStore } from '@/store/gitlabStore'
 import { useSettingsStore } from '@/store/settingsStore'
 import { DONE_STATUSES, IN_PROGRESS_STATUS } from '@/constants/redmine'
+import { SummaryDetailPanel } from '@/components/dashboard/SummaryDetailPanel'
+import type { CardType } from '@/components/dashboard/SummaryDetailPanel'
 
 function formatDateWithRelative(dateStr: string): string {
   const date = new Date(dateStr)
@@ -19,12 +21,23 @@ function formatDateWithRelative(dateStr: string): string {
   return `${datePart} (${Math.floor(hours / 24)}일 전)`
 }
 
+// 기간 드롭다운 옵션 (null = 전체)
+const PERIOD_OPTIONS: { label: string; days: number | null }[] = [
+  { label: '1일', days: 1 },
+  { label: '3일', days: 3 },
+  { label: '1주일', days: 7 },
+  { label: '2주일', days: 14 },
+  { label: '1개월', days: 30 },
+  { label: '전체', days: null },
+]
+
 interface SummaryCardProps {
   icon: React.ComponentType<{ size?: number; className?: string }>
   label: string
   value: number | string
   color: 'blue' | 'purple' | 'yellow' | 'red'
   isLoading?: boolean
+  onClick?: () => void
 }
 
 // 아이콘 배경 그라데이션 매핑
@@ -42,9 +55,12 @@ const textColorMap = {
   red: 'text-red-600 dark:text-red-400',
 }
 
-function SummaryCard({ icon: Icon, label, value, color, isLoading }: SummaryCardProps) {
+function SummaryCard({ icon: Icon, label, value, color, isLoading, onClick }: SummaryCardProps) {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-default">
+    <div
+      onClick={onClick}
+      className={`bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 ${onClick ? 'cursor-pointer' : 'cursor-default'}`}
+    >
       <div className="flex items-center justify-between mb-3">
         <p className="text-sm text-gray-500 dark:text-gray-400">{label}</p>
         {/* 아이콘 배경 그라데이션 */}
@@ -65,6 +81,8 @@ function SummaryCard({ icon: Icon, label, value, color, isLoading }: SummaryCard
 export function DashboardPage() {
   const glToken = useSettingsStore((s) => s.gitlab.token)
   const rmApiKey = useSettingsStore((s) => s.redmine.apiKey)
+  const gitlabUrl = useSettingsStore((s) => s.gitlab.url)
+  const redmineUrl = useSettingsStore((s) => s.redmine.url)
   const { selectedProjectId: rmProjectId, selectedVersionId } = useRedmineStore()
   const { selectedProjectId: glProjectId, selectedBranch, appliedDateRange } = useGitlabStore()
 
@@ -94,8 +112,16 @@ export function DashboardPage() {
     }
   }, [issues, commits])
 
-  // 최근 활동 피드 (커밋 + 이슈 갱신 혼합)
+  // 기간 드롭다운 상태 (기본 1주일)
+  const [activityPeriodDays, setActivityPeriodDays] = useState<number | null>(7)
+
+  // 최근 활동 피드 (커밋 + 이슈 갱신 혼합) + 기간 필터 적용
   const recentActivity = useMemo(() => {
+    // 기간 cutoff 계산
+    const cutoff = activityPeriodDays !== null
+      ? new Date(Date.now() - activityPeriodDays * 24 * 60 * 60 * 1000)
+      : null
+
     const activities = [
       ...commits.slice(0, 10).map((c) => ({
         type: 'commit' as const,
@@ -104,6 +130,8 @@ export function DashboardPage() {
         author: c.author_name,
         date: c.authored_date,
         ref: c.short_id,
+        // 커밋 원본 URL
+        url: c.web_url || (gitlabUrl ? `${gitlabUrl}/-/commit/${c.id}` : ''),
       })),
       ...issues
         .slice()
@@ -116,13 +144,17 @@ export function DashboardPage() {
           author: i.assigned_to?.name ?? i.author.name,
           date: i.updated_on,
           ref: `#${i.id}`,
+          // Redmine 이슈 URL
+          url: redmineUrl ? `${redmineUrl}/issues/${i.id}` : '',
         })),
     ]
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      .slice(0, 15)
+      // 기간 필터 적용
+      .filter((a) => !cutoff || new Date(a.date) >= cutoff)
+      .slice(0, 20)
 
     return activities
-  }, [commits, issues])
+  }, [commits, issues, activityPeriodDays, gitlabUrl, redmineUrl])
 
   // 작성자 드롭다운 상태 (임시 클라이언트 사이드 필터)
   const [selectedAuthor, setSelectedAuthor] = useState('')
@@ -138,6 +170,9 @@ export function DashboardPage() {
     if (!selectedAuthor) return recentActivity
     return recentActivity.filter((a) => a.author === selectedAuthor)
   }, [recentActivity, selectedAuthor])
+
+  // 요약 카드 상세 패널 상태
+  const [activeCard, setActiveCard] = useState<CardType | null>(null)
 
   const isNotConfigured = !glToken && !rmApiKey
 
@@ -164,6 +199,7 @@ export function DashboardPage() {
           value={stats.totalIssues}
           color="blue"
           isLoading={issuesLoading}
+          onClick={() => setActiveCard('issues')}
         />
         <SummaryCard
           icon={GitCommitHorizontal}
@@ -171,6 +207,7 @@ export function DashboardPage() {
           value={stats.weeklyCommits}
           color="purple"
           isLoading={commitsLoading}
+          onClick={() => setActiveCard('commits')}
         />
         <SummaryCard
           icon={PlayCircle}
@@ -178,6 +215,7 @@ export function DashboardPage() {
           value={stats.inProgress}
           color="yellow"
           isLoading={issuesLoading}
+          onClick={() => setActiveCard('inProgress')}
         />
         <SummaryCard
           icon={AlertTriangle}
@@ -185,27 +223,46 @@ export function DashboardPage() {
           value={stats.overdue}
           color="red"
           isLoading={issuesLoading}
+          onClick={() => setActiveCard('overdue')}
         />
       </div>
 
       {/* 최근 활동 */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
-        <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between gap-3">
+        <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between gap-2 flex-wrap">
           <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">최근 활동</h3>
-          {activityAuthors.length > 0 && (
+          <div className="flex items-center gap-2">
+            {/* 기간 드롭다운 */}
             <select
-              value={selectedAuthor}
-              onChange={(e) => setSelectedAuthor(e.target.value)}
+              value={activityPeriodDays ?? 'all'}
+              onChange={(e) =>
+                setActivityPeriodDays(e.target.value === 'all' ? null : Number(e.target.value))
+              }
               className="px-2 py-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="">전체 작성자</option>
-              {activityAuthors.map((author) => (
-                <option key={author} value={author}>
-                  {author}
+              {PERIOD_OPTIONS.map((opt) => (
+                <option key={opt.label} value={opt.days ?? 'all'}>
+                  {opt.label}
                 </option>
               ))}
             </select>
-          )}
+
+            {/* 작성자 드롭다운 */}
+            {activityAuthors.length > 0 && (
+              <select
+                value={selectedAuthor}
+                onChange={(e) => setSelectedAuthor(e.target.value)}
+                className="px-2 py-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">전체 작성자</option>
+                {activityAuthors.map((author) => (
+                  <option key={author} value={author}>
+                    {author}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
         </div>
         {filteredActivity.length === 0 ? (
           <div className="px-4 py-10 text-center text-sm text-gray-400">
@@ -216,7 +273,7 @@ export function DashboardPage() {
         ) : (
           <ul className="divide-y divide-gray-50 dark:divide-gray-700">
             {filteredActivity.map((activity) => (
-              <li key={`${activity.type}-${activity.id}`} className="flex items-center gap-3 px-4 py-3">
+              <li key={`${activity.type}-${activity.id}`} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                 <span
                   className={`shrink-0 text-xs font-mono px-1.5 py-0.5 rounded ${
                     activity.type === 'commit'
@@ -232,6 +289,18 @@ export function DashboardPage() {
                 </span>
                 <span className="text-xs text-gray-400 shrink-0">{activity.author}</span>
                 <span className="text-xs text-gray-400 shrink-0">{formatDateWithRelative(activity.date)}</span>
+                {/* 원본 링크 */}
+                {activity.url && (
+                  <a
+                    href={activity.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="shrink-0 text-gray-400 hover:text-blue-500 transition-colors"
+                    title="원본 보기"
+                  >
+                    <ExternalLink size={13} />
+                  </a>
+                )}
               </li>
             ))}
           </ul>
@@ -243,6 +312,18 @@ export function DashboardPage() {
         <p className="mt-4 text-xs text-gray-400 text-center">
           GitLab 또는 Redmine 페이지에서 프로젝트를 선택하면 이 화면에 데이터가 표시됩니다.
         </p>
+      )}
+
+      {/* 요약 카드 상세 패널 */}
+      {activeCard && (
+        <SummaryDetailPanel
+          type={activeCard}
+          issues={issues}
+          commits={commits}
+          redmineUrl={redmineUrl}
+          gitlabUrl={gitlabUrl}
+          onClose={() => setActiveCard(null)}
+        />
       )}
     </div>
   )

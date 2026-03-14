@@ -17,7 +17,9 @@
 | Sprint 6 | API 키 온보딩 + 조회 버튼 + UI 모던화 | ✅ 완료 | 2026-03-14 |
 | Sprint 7 | URL 고정 + 모델 단일화 + 작성자 드롭다운 | ✅ 완료 | 2026-03-15 |
 
-**다음 사용 가능한 스프린트 번호**: Sprint 8
+| Sprint 8 | 대시보드 카드 상세 모달 + 최근 활동 링크 + 기간 필터 | 계획 완료 (2026-03-15) | - |
+
+**다음 사용 가능한 스프린트 번호**: Sprint 9
 
 ---
 
@@ -48,3 +50,7 @@
 - **Sprint 7 설계 결정**: GitLab/Redmine URL이 환경변수 기반으로 고정됨에 따라 SettingsPage, OnboardingModal 두 곳 모두에서 URL 입력 필드 제거 필요. App.tsx의 needsOnboarding 조건도 URL 항목 제거 필요.
 - **GitLab 작성자 드롭다운**: CommitFilterBar는 `authors?: string[]` props를 받아 드롭다운 렌더링. 작성자 목록은 GitlabPage에서 현재 커밋 `author_name` 기반으로 추출 (클라이언트 사이드, API 추가 호출 없음).
 - **Dashboard 작성자 필터**: useState 로컬 상태로 관리 (store 미사용). recentActivity에서 작성자 목록 추출, filteredActivity useMemo로 클라이언트 사이드 필터링. 임시 구현으로 명시.
+- **Sprint 8 신규 컴포넌트**: `src/components/dashboard/SummaryDetailPanel.tsx` — 카드 상세 슬라이드인 패널. `CardType`, `IssueSummaryItem`, `CommitSummaryItem` 타입 export.
+- **Dashboard 기간 필터**: `activityPeriodDays` useState(기본 7)로 로컬 관리. recentActivity useMemo 내 cutoff 계산 후 filter 적용. 기간 필터 후 작성자 필터 순으로 적용.
+- **recentActivity url 필드**: Sprint 8에서 추가. 커밋 = `c.web_url`, 이슈 = `redmineUrl ? \`${redmineUrl}/issues/${id}\` : undefined`. url 없으면 링크 미표시 (span fallback).
+- **z-index 레이어**: SummaryDetailPanel 오버레이 z-40, 패널 z-50. ChatbotPanel z-index와 충돌 여부 확인 필요.
