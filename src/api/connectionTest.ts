@@ -22,11 +22,12 @@ export async function testGitlabConnection(
 }
 
 export async function testRedmineConnection(
-  url: string,
+  _url: string,
   apiKey: string
 ): Promise<{ success: boolean; username?: string; error?: string }> {
   try {
-    const response = await axios.get(`${url}/users/current.json`, {
+    // Vite 프록시(/redmine-api)를 통해 CORS 없이 요청 (url은 vite.config.ts에서 proxy 타겟으로 설정됨)
+    const response = await axios.get('/redmine-api/users/current.json', {
       headers: { 'X-Redmine-API-Key': apiKey },
       timeout: 5000,
     })

@@ -30,9 +30,9 @@ function IssueSkeleton() {
 export function RedminePage() {
   const apiKey = useSettingsStore((s) => s.redmine.apiKey)
   const {
-    selectedProjectId,
-    selectedVersionId,
-    // 적용된 필터 사용 (조회 버튼 클릭 후 반영)
+    // 조회 버튼 클릭 후 반영되는 applied 값으로 API 호출
+    appliedProjectId,
+    appliedVersionId,
     appliedStatusFilter,
     appliedPriorityFilter,
     appliedKeyword,
@@ -40,7 +40,7 @@ export function RedminePage() {
 
   useAutoRefresh([['redmine', 'projects'], ['redmine', 'issues']])
 
-  const { data: issues = [], isLoading, isError, error } = useRedmineIssues(selectedProjectId, selectedVersionId)
+  const { data: issues = [], isLoading, isError, error } = useRedmineIssues(appliedProjectId, appliedVersionId)
 
   // 트리 구성 + 적용된 필터 반영
   const filteredTree = useMemo(() => {
@@ -73,7 +73,7 @@ export function RedminePage() {
       <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 space-y-3 shadow-sm">
         <ProjectVersionSelector />
 
-        {selectedProjectId && issues.length > 0 && (
+        {appliedProjectId && issues.length > 0 && (
           <>
             <VersionProgressBar issues={issues} />
             <DueSoonBanner issues={issues} />
@@ -84,9 +84,9 @@ export function RedminePage() {
 
       {/* 일감 트리 */}
       <div className="flex-1 overflow-auto bg-white dark:bg-gray-900 p-3">
-        {!selectedProjectId ? (
+        {!appliedProjectId ? (
           <div className="flex flex-col items-center justify-center py-20 text-gray-400">
-            <p className="text-sm">프로젝트를 선택하세요.</p>
+            <p className="text-sm">프로젝트를 선택하고 조회 버튼을 눌러주세요.</p>
           </div>
         ) : isLoading ? (
           <IssueSkeleton />

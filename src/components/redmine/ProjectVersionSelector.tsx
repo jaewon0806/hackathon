@@ -1,11 +1,17 @@
-import { ChevronDown, Folder, Tag } from 'lucide-react'
+import { ChevronDown, Folder, Tag, SlidersHorizontal } from 'lucide-react'
 import { useRedmineProjects } from '@/hooks/useRedmineProjects'
 import { useRedmineVersions } from '@/hooks/useRedmineVersions'
 import { useRedmineStore } from '@/store/redmineStore'
 
 export function ProjectVersionSelector() {
   const { data: projects, isLoading: loadingProjects } = useRedmineProjects()
-  const { selectedProjectId, selectedVersionId, setSelectedProjectId, setSelectedVersionId } = useRedmineStore()
+  const {
+    selectedProjectId,
+    selectedVersionId,
+    setSelectedProjectId,
+    setSelectedVersionId,
+    applyProject,
+  } = useRedmineStore()
   const { data: versions, isLoading: loadingVersions } = useRedmineVersions(selectedProjectId)
 
   return (
@@ -56,6 +62,18 @@ export function ProjectVersionSelector() {
           </select>
           <ChevronDown size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
         </div>
+      </div>
+
+      {/* 조회 버튼 */}
+      <div className="self-end">
+        <button
+          onClick={applyProject}
+          disabled={!selectedProjectId}
+          className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <SlidersHorizontal size={14} />
+          조회
+        </button>
       </div>
     </div>
   )

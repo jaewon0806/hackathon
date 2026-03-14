@@ -11,6 +11,9 @@ interface RedmineState {
   statusFilter: string[]
   priorityFilter: string[]
   keyword: string
+  // 적용된 프로젝트/버전 ("조회" 버튼 클릭 시 반영 — API 호출 트리거)
+  appliedProjectId: number | null
+  appliedVersionId: number | null
   // 적용된 필터 ("조회" 버튼 클릭 시 반영)
   appliedStatusFilter: string[]
   appliedPriorityFilter: string[]
@@ -25,6 +28,8 @@ interface RedmineState {
   toggleIssueExpanded: (id: number) => void
   setExpandedIssueIds: (ids: number[]) => void
   applyFilters: () => void
+  // 프로젝트/버전 + 필터를 모두 적용 ("조회" 버튼)
+  applyProject: () => void
 }
 
 export const useRedmineStore = create<RedmineState>()(
@@ -37,6 +42,8 @@ export const useRedmineStore = create<RedmineState>()(
       priorityFilter: [],
       keyword: '',
       expandedIssueIds: [],
+      appliedProjectId: null,
+      appliedVersionId: null,
       // 초기값: applied = draft (첫 로딩 시 기본 필터가 즉시 적용되도록)
       appliedStatusFilter: [],
       appliedPriorityFilter: [],
@@ -58,6 +65,17 @@ export const useRedmineStore = create<RedmineState>()(
       applyFilters: () => {
         const { statusFilter, priorityFilter, keyword } = get()
         set({
+          appliedStatusFilter: statusFilter,
+          appliedPriorityFilter: priorityFilter,
+          appliedKeyword: keyword,
+        })
+      },
+      // 프로젝트/버전 + 필터 모두 적용 ("조회" 버튼 클릭 시)
+      applyProject: () => {
+        const { selectedProjectId, selectedVersionId, statusFilter, priorityFilter, keyword } = get()
+        set({
+          appliedProjectId: selectedProjectId,
+          appliedVersionId: selectedVersionId,
           appliedStatusFilter: statusFilter,
           appliedPriorityFilter: priorityFilter,
           appliedKeyword: keyword,
