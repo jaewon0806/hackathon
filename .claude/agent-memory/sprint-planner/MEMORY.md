@@ -14,8 +14,9 @@
 | Sprint 3 | Redmine 일감 트리 | ✅ 완료 | 2026-03-13 |
 | Sprint 4 | AI 챗봇 + 대시보드 홈 | ✅ 완료 | 2026-03-13 |
 | Sprint 5 | UI 다듬기 + 배포 | ✅ 완료 | 2026-03-13 |
+| Sprint 6 | API 키 온보딩 + 조회 버튼 + UI 모던화 | ✅ 완료 | 2026-03-14 |
 
-**다음 사용 가능한 스프린트 번호**: Sprint 6
+**다음 사용 가능한 스프린트 번호**: Sprint 7
 
 ---
 
@@ -41,3 +42,5 @@
 - **Redmine URL href XSS**: `IssueTreeNode`에서 `redmineUrl` href 사용 시 `javascript:` 프로토콜 필터링 없음. Sprint 5 코드 리뷰에서 Medium으로 기록. 다음 스프린트에서 URL 유효성 검사 추가 권장.
 - **Vercel rewrites 하드코딩**: `vercel.json`에 GitLab(`gitlab.ubware.com`), Redmine(`redmine.ubware.com`) URL이 하드코딩됨. 다른 환경에서 재배포 시 수정 필요.
 - **인프라 변경**: Sprint 5에서 Docker/Nginx → Vercel로 전환. `docker compose up --build` 스테이징 검증 절차는 더 이상 해당 없음.
+- **appliedFilter 패턴**: Sprint 6에서 gitlabStore/redmineStore에 draft/applied 이중 상태 구조 도입. 드래프트는 입력 즉시 반영, applied는 조회 버튼 클릭 시 복사. 새 필터 기능 추가 시 동일 패턴 준수 필요.
+- **OnboardingModal 표시 조건**: `App.tsx`에서 `needsOnboarding` 변수로 GitLab URL + Token + Redmine URL + apiKey 4개 모두 채워져야 모달이 닫힘. 새 필수 API 키 추가 시 조건 업데이트 필요.
