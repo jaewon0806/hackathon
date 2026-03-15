@@ -61,6 +61,8 @@ jobs:
     name: 프로덕션 서버 배포
     runs-on: ubuntu-latest
     needs: build-and-push
+    # Lightsail SSH 시크릿이 설정된 경우에만 실행
+    if: ${{ secrets.LIGHTSAIL_HOST != '' }}
 
     steps:
       - name: SSH 배포
