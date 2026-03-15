@@ -1,6 +1,6 @@
 # 업무 대시보드 (Daily Work Dashboard)
 
-[![CI](https://github.com/frogy95/choiji-guide-big/actions/workflows/ci.yml/badge.svg)](https://github.com/frogy95/choiji-guide-big/actions/workflows/ci.yml)
+[![CI](https://github.com/jaewon0806/hackathon/actions/workflows/ci.yml/badge.svg)](https://github.com/jaewon0806/hackathon/actions/workflows/ci.yml)
 
 > GitLab 커밋 이력 + Redmine 일감 + Claude AI 챗봇을 통합한 업무 현황 대시보드
 
@@ -162,6 +162,56 @@ git checkout main -b hotfix/{설명}
 1. Docker 이미지 빌드 (React SPA → Nginx 서빙)
 2. GHCR(GitHub Container Registry)에 이미지 push (`latest` + `{commit-sha}` 태그)
 3. SSH로 프로덕션 서버 접속 → `docker compose pull && docker compose up -d`
+
+---
+
+## 테스트 전략
+
+### 단위 / 컴포넌트 테스트 (Vitest + Testing Library)
+
+```bash
+npm test              # 62건 실행
+npm run test:coverage # 커버리지 리포트 생성
+```
+
+| 테스트 파일 | 건수 | 대상 |
+|------------|------|------|
+| `issueTreeBuilder.test.ts` | 13건 | 트리 빌드 + 필터 유틸 |
+| `gitlabStore.test.ts` | 11건 | Draft/Applied 상태 패턴 |
+| `redmineStore.test.ts` | 12건 | 프로젝트/버전/필터 상태 |
+| `connectionTest.test.ts` | 9건 | GitLab/Redmine 연결 테스트 |
+| `SummaryDetailPanel.test.tsx` | 10건 | 카드 상세 패널 컴포넌트 |
+| `ChatbotPanel.test.tsx` | 7건 | 챗봇 패널 컴포넌트 |
+
+**핵심 로직 파일 커버리지** (핵심 비즈니스 로직 기준):
+
+| 파일 | Statements | Branches | Functions |
+|------|-----------|---------|---------|
+| `issueTreeBuilder.ts` | 100% | 100% | 100% |
+| `gitlabStore.ts` | 100% | 100% | 100% |
+| `connectionTest.ts` | 100% | 100% | 100% |
+| `SummaryDetailPanel.tsx` | 92% | 82% | 100% |
+| `redmineStore.ts` | 76% | 100% | 79% |
+
+> 페이지/훅/컴포넌트 렌더링은 Playwright E2E 테스트로 커버됩니다.
+
+### E2E 테스트 (Playwright)
+
+```bash
+npm run test:e2e   # 7건 E2E 실행 (데모 모드)
+```
+
+| 테스트 | 검증 내용 |
+|--------|---------|
+| 대시보드 홈 로드 | SPA 초기 렌더링 확인 |
+| 온보딩 모달 미표시 | 데모 모드에서 API 키 없이 진입 |
+| GitLab/Redmine/설정 페이지 이동 | 라우팅 동작 |
+| SPA 폴백 라우팅 | 404 대신 앱 로드 |
+| 챗봇 플로팅 버튼 | UI 요소 렌더링 |
+
+### CI 자동화 파이프라인
+
+PR 생성 시 자동 실행: **lint → test → build → e2e → docker-build**
 
 ---
 
