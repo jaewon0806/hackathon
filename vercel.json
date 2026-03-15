@@ -1,12 +1,8 @@
 {
   "rewrites": [
-    {
-      "source": "/gitlab-api/:path*",
-      "destination": "https://gitlab.ubware.com/api/v4/:path*"
-    },
-    {
-      "source": "/redmine-api/:path*",
-      "destination": "https://redmine.ubware.com/:path*"
-    }
-  ]
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "framework": "vite"
 }

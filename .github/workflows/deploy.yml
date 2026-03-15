@@ -7,9 +7,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  # TODO: 아래 이미지명을 실제 GitHub 조직/계정명으로 변경하세요
-  # 예시: ghcr.io/frogy95/dashboard-frontend
-  FRONTEND_IMAGE: ghcr.io/YOUR_GITHUB_ORG/dashboard-frontend
+  FRONTEND_IMAGE: ghcr.io/jaewon0806/dashboard-frontend
 
 jobs:
   build-and-push:
