@@ -23,9 +23,20 @@ function formatDate(dateStr: string | undefined): React.ReactNode {
   )
 }
 
+// javascript: 등 위험한 프로토콜 차단 (XSS 방어)
+function safePrefixUrl(url: string): string {
+  try {
+    const parsed = new URL(url)
+    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') return url
+  } catch {
+    // 빈 문자열 등 파싱 실패
+  }
+  return ''
+}
+
 export function IssueTreeNode({ node, depth = 0 }: Props) {
   const { expandedIssueIds, toggleIssueExpanded } = useRedmineStore()
-  const redmineUrl = useSettingsStore((s) => s.redmine.url)
+  const redmineUrl = safePrefixUrl(useSettingsStore((s) => s.redmine.url))
   const isExpanded = expandedIssueIds.includes(node.id)
   const hasChildren = node.children.length > 0
 

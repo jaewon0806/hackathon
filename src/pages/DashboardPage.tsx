@@ -1,6 +1,7 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useCallback, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { ClipboardList, GitCommitHorizontal, PlayCircle, AlertTriangle, Settings, ExternalLink } from 'lucide-react'
+import { ClipboardList, GitCommitHorizontal, PlayCircle, AlertTriangle, Settings, ExternalLink, Sparkles, Copy, Check, X } from 'lucide-react'
+import { generateStandupReport } from '@/api/claudeClient'
 import { useRedmineIssues } from '@/hooks/useRedmineIssues'
 import { useGitlabCommits } from '@/hooks/useGitlabCommits'
 import { useRedmineStore } from '@/store/redmineStore'
@@ -98,6 +99,39 @@ export function DashboardPage() {
   )
   const commits = useMemo(() => commitsData?.pages.flat() ?? [], [commitsData])
 
+  // ── AI 스탠드업 리포트 상태 ──
+  const [standupReport, setStandupReport] = useState('')
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [standupError, setStandupError] = useState('')
+  const [showStandup, setShowStandup] = useState(false)
+  const [copied, setCopied] = useState(false)
+  const standupRef = useRef<HTMLDivElement>(null)
+  const anthropicKey = useSettingsStore((s) => s.anthropic.apiKey)
+
+  const handleGenerateStandup = useCallback(async () => {
+    if (isGenerating) return
+    setStandupReport('')
+    setStandupError('')
+    setShowStandup(true)
+    setIsGenerating(true)
+
+    await generateStandupReport(issues, commits, {
+      onToken: (token) => setStandupReport((prev) => prev + token),
+      onDone: () => setIsGenerating(false),
+      onError: (err) => {
+        setStandupError(err.message)
+        setIsGenerating(false)
+      },
+    })
+  }, [issues, commits, isGenerating])
+
+  const handleCopyStandup = useCallback(async () => {
+    if (!standupReport) return
+    await navigator.clipboard.writeText(standupReport)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }, [standupReport])
+
   const stats = useMemo(() => {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
@@ -178,7 +212,60 @@ export function DashboardPage() {
 
   return (
     <div className="p-6 max-w-4xl">
-      <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-5">오늘의 업무 현황</h2>
+      <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
+        <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">오늘의 업무 현황</h2>
+        {/* AI 스탠드업 리포트 버튼 */}
+        <button
+          onClick={handleGenerateStandup}
+          disabled={isGenerating || !anthropicKey}
+          title={!anthropicKey ? 'Anthropic API 키를 설정하세요' : 'AI가 오늘의 스탠드업 리포트를 생성합니다'}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 text-white text-sm font-medium shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+        >
+          <Sparkles size={15} className={isGenerating ? 'animate-spin' : ''} />
+          {isGenerating ? '생성 중...' : '스탠드업 리포트'}
+        </button>
+      </div>
+
+      {/* AI 스탠드업 리포트 패널 */}
+      {showStandup && (
+        <div ref={standupRef} className="mb-5 bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/30 border border-violet-200 dark:border-violet-800 rounded-2xl overflow-hidden shadow-sm">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-violet-200 dark:border-violet-800">
+            <div className="flex items-center gap-2">
+              <Sparkles size={14} className="text-violet-600 dark:text-violet-400" />
+              <span className="text-sm font-semibold text-violet-700 dark:text-violet-300">AI 스탠드업 리포트</span>
+              {isGenerating && (
+                <span className="text-xs text-violet-500 dark:text-violet-400 animate-pulse">작성 중...</span>
+              )}
+            </div>
+            <div className="flex items-center gap-1">
+              {standupReport && !isGenerating && (
+                <button
+                  onClick={handleCopyStandup}
+                  className="flex items-center gap-1 px-2 py-1 text-xs text-violet-600 dark:text-violet-400 hover:bg-violet-100 dark:hover:bg-violet-900/50 rounded-lg transition-colors"
+                >
+                  {copied ? <Check size={12} /> : <Copy size={12} />}
+                  {copied ? '복사됨' : '복사'}
+                </button>
+              )}
+              <button
+                onClick={() => setShowStandup(false)}
+                className="p-1 text-violet-400 hover:text-violet-600 dark:hover:text-violet-300 hover:bg-violet-100 dark:hover:bg-violet-900/50 rounded-lg transition-colors"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          </div>
+          <div className="px-4 py-4 text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed min-h-[80px]">
+            {standupError ? (
+              <span className="text-red-500">{standupError}</span>
+            ) : standupReport ? (
+              standupReport
+            ) : (
+              <span className="text-violet-400 animate-pulse">AI가 리포트를 작성하고 있습니다...</span>
+            )}
+          </div>
+        </div>
+      )}
 
       {isNotConfigured && (
         <div className="mb-5 flex items-center gap-3 p-4 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-xl text-sm text-orange-700 dark:text-orange-300">

@@ -13,6 +13,7 @@
 
 | 기능 | 설명 |
 |------|------|
+| **AI 스탠드업 리포트** ✨ | 버튼 하나로 어제 커밋 + 오늘 할 일 + 블로킹 이슈를 Claude AI가 자동 생성, 클립보드 복사 |
 | 대시보드 홈 | 담당일감·커밋·진행중·기한초과 요약 카드 (클릭 시 상세 패널) + 최근 활동 피드 (기간/작성자 필터) |
 | GitLab 커밋 이력 | 프로젝트/브랜치별 커밋 목록, 작성자 드롭다운·기간·키워드 필터, 무한 스크롤 |
 | Redmine 일감 트리 | 상위→하위 일감 트리 뷰, 목표 버전별 조회, 담당자/상태/우선순위/키워드 필터, 완료율·마감 임박 배너 |
@@ -153,9 +154,10 @@ git checkout main -b hotfix/{설명}
 | Job | 의존 | 내용 |
 |-----|------|------|
 | `lint-and-typecheck` | — | ESLint (`--max-warnings 0`) + TypeScript strict 타입 체크 |
-| `test` | lint-and-typecheck | Vitest 단위 테스트 45건 (utils, store, api) |
+| `test` | lint-and-typecheck | Vitest 97건 + 커버리지 측정 + 임계값 강제 → `coverage/` 아티팩트 업로드 |
 | `build` | lint-and-typecheck, test | Vite 프로덕션 빌드 검증 (더미 환경변수 주입) |
-| `docker-build` | — | Dockerfile 빌드 성공 여부 확인 |
+| `e2e` | build | Playwright 14건 E2E (데모 모드 + 모바일 375px) → `playwright-report/` 아티팩트 업로드 |
+| `docker-build` | — | Dockerfile 멀티스테이지 빌드 성공 여부 확인 |
 
 ### CD (`deploy.yml`) — main push 시 자동 실행
 
@@ -170,48 +172,64 @@ git checkout main -b hotfix/{설명}
 ### 단위 / 컴포넌트 테스트 (Vitest + Testing Library)
 
 ```bash
-npm test              # 62건 실행
-npm run test:coverage # 커버리지 리포트 생성
+npm test              # 97건 실행 (8개 파일)
+npm run test:coverage # 커버리지 측정 + 임계값 강제
 ```
 
 | 테스트 파일 | 건수 | 대상 |
 |------------|------|------|
-| `issueTreeBuilder.test.ts` | 13건 | 트리 빌드 + 필터 유틸 |
-| `gitlabStore.test.ts` | 11건 | Draft/Applied 상태 패턴 |
+| `issueTreeBuilder.test.ts` | 13건 | 트리 빌드 + 필터 유틸 (100% 커버리지) |
+| `gitlabStore.test.ts` | 11건 | Draft/Applied 상태 패턴 (100% 커버리지) |
 | `redmineStore.test.ts` | 12건 | 프로젝트/버전/필터 상태 |
-| `connectionTest.test.ts` | 9건 | GitLab/Redmine 연결 테스트 |
+| `connectionTest.test.ts` | 9건 | GitLab/Redmine 연결 테스트 (100% 커버리지) |
 | `SummaryDetailPanel.test.tsx` | 10건 | 카드 상세 패널 컴포넌트 |
-| `ChatbotPanel.test.tsx` | 7건 | 챗봇 패널 컴포넌트 |
+| `ChatbotPanel.test.tsx` | 7건 | 챗봇 패널 open/close/스트리밍 |
+| `chatbotStore.test.ts` | 20건 | 채팅 이력/스트리밍/MAX_HISTORY (100% 커버리지) |
+| `settingsStore.test.ts` | 15건 | 설정 저장/테마/독립성 (100% 커버리지) |
 
-**핵심 로직 파일 커버리지** (핵심 비즈니스 로직 기준):
+**핵심 비즈니스 로직 커버리지** (CI 임계값 강제):
 
 | 파일 | Statements | Branches | Functions |
 |------|-----------|---------|---------|
-| `issueTreeBuilder.ts` | 100% | 100% | 100% |
-| `gitlabStore.ts` | 100% | 100% | 100% |
-| `connectionTest.ts` | 100% | 100% | 100% |
-| `SummaryDetailPanel.tsx` | 92% | 82% | 100% |
-| `redmineStore.ts` | 76% | 100% | 79% |
+| `issueTreeBuilder.ts` | **100%** | **100%** | **100%** |
+| `gitlabStore.ts` | **100%** | **100%** | **100%** |
+| `chatbotStore.ts` | **100%** | **100%** | **100%** |
+| `settingsStore.ts` | **100%** | 50% | **100%** |
+| `connectionTest.ts` | **100%** | **100%** | **100%** |
+| `SummaryDetailPanel.tsx` | 92% | 82% | **100%** |
 
-> 페이지/훅/컴포넌트 렌더링은 Playwright E2E 테스트로 커버됩니다.
+> 스토어/유틸 핵심 로직은 80% 이상 커버리지 미달 시 CI 빌드 실패로 강제합니다.
+> 페이지/훅/컴포넌트 렌더링은 Playwright E2E로 커버합니다.
 
-### E2E 테스트 (Playwright)
+### E2E 테스트 (Playwright — 데모 모드)
 
 ```bash
-npm run test:e2e   # 7건 E2E 실행 (데모 모드)
+npm run test:e2e   # 14건 E2E 실행 (데스크톱 + 모바일 375px)
 ```
+
+**`e2e/demo.spec.ts` — 기능 동작 (7건)**
 
 | 테스트 | 검증 내용 |
 |--------|---------|
-| 대시보드 홈 로드 | SPA 초기 렌더링 확인 |
-| 온보딩 모달 미표시 | 데모 모드에서 API 키 없이 진입 |
-| GitLab/Redmine/설정 페이지 이동 | 라우팅 동작 |
-| SPA 폴백 라우팅 | 404 대신 앱 로드 |
-| 챗봇 플로팅 버튼 | UI 요소 렌더링 |
+| 대시보드 홈 로드 | SPA 초기 렌더링, nav/header 가시성 |
+| 온보딩 모달 미표시 | 데모 모드에서 설정 가이드 미노출 |
+| GitLab/Redmine/설정 페이지 이동 | 라우팅 + URL 검증 |
+| SPA 폴백 라우팅 | 존재하지 않는 경로 → 앱 로드 |
+| 챗봇 플로팅 버튼 | fixed 위치 버튼 렌더링 |
+
+**`e2e/mobile.spec.ts` — 모바일 반응형 (7건, 375px 뷰포트)**
+
+| 테스트 | 검증 내용 |
+|--------|---------|
+| 모바일 앱 로드 + 가로 스크롤 없음 | `scrollWidth <= clientWidth` 확인 |
+| 사이드바 오버레이 모드 | TopBar/header 가시성 |
+| 대시보드 요약 카드 표시 | JS 에러 0건 확인 |
+| 챗봇 버튼 표시 | 모바일 fixed 버튼 가시성 |
+| GitLab/Redmine/설정 페이지 | 가로 스크롤 없음 + 렌더링 확인 |
 
 ### CI 자동화 파이프라인
 
-PR 생성 시 자동 실행: **lint → test → build → e2e → docker-build**
+PR 생성 시 자동 실행: **lint → test(+커버리지) → build → e2e(데스크톱+모바일) → docker-build**
 
 ---
 

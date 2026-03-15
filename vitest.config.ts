@@ -23,6 +23,11 @@ export default defineConfig({
         'src/components/chatbot/ChatbotPanel.tsx',
       ],
       exclude: ['src/test/**', 'src/mocks/**', 'src/**/*.d.ts'],
+      // 스토어/유틸 핵심 로직 커버리지 임계값 (CI 실패 기준)
+      thresholds: {
+        'src/store/**': { statements: 80, branches: 50, functions: 80, lines: 80 },
+        'src/utils/**': { statements: 90, branches: 90, functions: 90, lines: 90 },
+      },
     },
     // import.meta.env 더미 값 (실제 API 키 불필요)
     env: {
