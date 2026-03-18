@@ -1,4 +1,5 @@
 import axios from 'axios'
+import Anthropic from '@anthropic-ai/sdk'
 
 export async function testGitlabConnection(
   url: string,
@@ -18,6 +19,25 @@ export async function testGitlabConnection(
       return { success: false, error: 'GitLab 서버에 연결할 수 없습니다.' }
     }
     return { success: false, error: '알 수 없는 오류가 발생했습니다.' }
+  }
+}
+
+export async function testAnthropicConnection(
+  apiKey: string
+): Promise<{ success: boolean; model?: string; error?: string }> {
+  try {
+    const client = new Anthropic({ apiKey, dangerouslyAllowBrowser: true })
+    const list = await client.models.list({ limit: 1 })
+    const firstModel = list.data[0]?.id ?? 'claude'
+    return { success: true, model: firstModel }
+  } catch (error) {
+    if (error instanceof Anthropic.AuthenticationError) {
+      return { success: false, error: 'Anthropic API 키가 유효하지 않습니다.' }
+    }
+    if (error instanceof Anthropic.RateLimitError) {
+      return { success: false, error: 'API 요청 한도를 초과했습니다. 잠시 후 재시도하세요.' }
+    }
+    return { success: false, error: 'Anthropic 서버에 연결할 수 없습니다.' }
   }
 }
 

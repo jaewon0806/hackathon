@@ -1,7 +1,18 @@
 import { useState } from 'react'
 import { Eye, EyeOff, Loader2, CheckCircle, ChevronRight, ChevronLeft } from 'lucide-react'
 import { useSettingsStore } from '@/store/settingsStore'
-import { testGitlabConnection, testRedmineConnection } from '@/api/connectionTest'
+import { testGitlabConnection, testRedmineConnection, testAnthropicConnection } from '@/api/connectionTest'
+
+// .env.example 기본값 — 이 값이면 미설정으로 간주
+const DEFAULT_VALUES = {
+  gitlabToken: 'your_gitlab_personal_access_token',
+  redmineKey: 'your_redmine_api_key',
+  anthropicKey: 'your_anthropic_api_key',
+}
+
+function toInitialValue(val: string, defaultVal: string) {
+  return val === defaultVal ? '' : val
+}
 
 // 비밀번호 입력 컴포넌트 (토큰/키 입력용)
 function PasswordInput({
@@ -56,25 +67,61 @@ function StepIndicator({ current, total }: { current: number; total: number }) {
 
 const TOTAL_STEPS = 3
 
-export function OnboardingModal() {
+// 온보딩 시작 단계 결정: 미설정된 첫 번째 단계부터 시작
+function getInitialStep(store: ReturnType<typeof useSettingsStore.getState>): number {
+  if (
+    !store.gitlab.token.trim() ||
+    store.gitlab.token === DEFAULT_VALUES.gitlabToken
+  ) return 0
+  if (
+    !store.redmine.apiKey.trim() ||
+    store.redmine.apiKey === DEFAULT_VALUES.redmineKey
+  ) return 1
+  return 2
+}
+
+export function OnboardingModal({ onDismiss }: { onDismiss: () => void }) {
   const store = useSettingsStore()
 
-  const [step, setStep] = useState(0)
+  const [step, setStep] = useState(() => getInitialStep(useSettingsStore.getState()))
 
-  // GitLab 입력 상태 (URL은 환경변수 고정이므로 제외)
-  const [gitlabToken, setGitlabToken] = useState(store.gitlab.token)
+  // GitLab 입력 상태 (URL은 환경변수 고정이므로 제외) — 기본값이면 빈 문자열로 초기화
+  const [gitlabToken, setGitlabToken] = useState(
+    toInitialValue(store.gitlab.token, DEFAULT_VALUES.gitlabToken),
+  )
   const [testingGitlab, setTestingGitlab] = useState(false)
   const [gitlabStatus, setGitlabStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const [gitlabMessage, setGitlabMessage] = useState('')
 
-  // Redmine 입력 상태 (URL은 환경변수 고정이므로 제외)
-  const [redmineKey, setRedmineKey] = useState(store.redmine.apiKey)
+  // Redmine 입력 상태 (URL은 환경변수 고정이므로 제외) — 기본값이면 빈 문자열로 초기화
+  const [redmineKey, setRedmineKey] = useState(
+    toInitialValue(store.redmine.apiKey, DEFAULT_VALUES.redmineKey),
+  )
   const [testingRedmine, setTestingRedmine] = useState(false)
   const [redmineStatus, setRedmineStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const [redmineMessage, setRedmineMessage] = useState('')
 
-  // Anthropic 입력 상태
-  const [anthropicKey, setAnthropicKey] = useState(store.anthropic.apiKey)
+  // Anthropic 입력 상태 — 기본값이면 빈 문자열로 초기화
+  const [anthropicKey, setAnthropicKey] = useState(
+    toInitialValue(store.anthropic.apiKey, DEFAULT_VALUES.anthropicKey),
+  )
+  const [testingAnthropic, setTestingAnthropic] = useState(false)
+  const [anthropicStatus, setAnthropicStatus] = useState<'idle' | 'success' | 'error'>('idle')
+  const [anthropicMessage, setAnthropicMessage] = useState('')
+
+  const handleTestAnthropic = async () => {
+    setTestingAnthropic(true)
+    setAnthropicStatus('idle')
+    const result = await testAnthropicConnection(anthropicKey)
+    setTestingAnthropic(false)
+    if (result.success) {
+      setAnthropicStatus('success')
+      setAnthropicMessage(`연결 성공 (${result.model})`)
+    } else {
+      setAnthropicStatus('error')
+      setAnthropicMessage(result.error || '연결 실패')
+    }
+  }
 
   const handleTestGitlab = async () => {
     setTestingGitlab(true)
@@ -116,16 +163,11 @@ export function OnboardingModal() {
     setStep((s) => s + 1)
   }
 
-  const handleSkipAnthropic = () => {
-    // Anthropic 건너뛰기 — store에 빈값 유지 (변경 없음)
-    store.setGitlab({ token: gitlabToken })
-    store.setRedmine({ apiKey: redmineKey })
-  }
-
   const handleFinish = () => {
     store.setGitlab({ token: gitlabToken })
     store.setRedmine({ apiKey: redmineKey })
     store.setAnthropic({ apiKey: anthropicKey })
+    onDismiss()
   }
 
   // 다음 버튼 활성화 조건 (URL 제거 후 토큰/키만 확인)
@@ -145,7 +187,7 @@ export function OnboardingModal() {
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
             {step === 0 && 'GitLab Personal Access Token을 입력하세요.'}
             {step === 1 && 'Redmine API Access Key를 입력하세요.'}
-            {step === 2 && 'Claude AI 챗봇 설정 (선택 사항)'}
+            {step === 2 && 'Anthropic API Key를 입력하면 챗봇을 사용할 수 있습니다.'}
           </p>
         </div>
 
@@ -159,7 +201,7 @@ export function OnboardingModal() {
             <>
               <div>
                 <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">
-                  Personal Access Token
+                  GitLab Personal Access Token
                 </label>
                 <PasswordInput
                   value={gitlabToken}
@@ -189,7 +231,7 @@ export function OnboardingModal() {
             <>
               <div>
                 <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">
-                  API Access Key
+                  Redmine API Access Key
                 </label>
                 <PasswordInput
                   value={redmineKey}
@@ -230,6 +272,20 @@ export function OnboardingModal() {
                   placeholder="sk-ant-xxxxxxxxxxxx"
                 />
               </div>
+              <button
+                onClick={handleTestAnthropic}
+                disabled={testingAnthropic || !anthropicKey}
+                className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {testingAnthropic && <Loader2 size={14} className="animate-spin" />}
+                {!testingAnthropic && anthropicStatus === 'success' && <CheckCircle size={14} className="text-green-500" />}
+                연결 테스트
+              </button>
+              {anthropicMessage && (
+                <p className={`text-xs ${anthropicStatus === 'success' ? 'text-green-600' : 'text-red-500'}`}>
+                  {anthropicMessage}
+                </p>
+              )}
             </>
           )}
         </div>
@@ -264,17 +320,8 @@ export function OnboardingModal() {
             <div />
           )}
 
-          {/* 다음/완료/건너뛰기 버튼 */}
+          {/* 다음/완료 버튼 */}
           <div className="flex items-center gap-2">
-            {/* Anthropic 단계 건너뛰기 */}
-            {step === 2 && (
-              <button
-                onClick={handleSkipAnthropic}
-                className="text-sm text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 px-3 py-2 transition-colors"
-              >
-                건너뛰기
-              </button>
-            )}
             {step < TOTAL_STEPS - 1 ? (
               <button
                 onClick={handleNext}

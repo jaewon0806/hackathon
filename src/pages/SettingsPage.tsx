@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Eye, EyeOff, Loader2 } from 'lucide-react'
 import { useSettingsStore } from '@/store/settingsStore'
 import { useToast } from '@/hooks/useToast'
-import { testGitlabConnection, testRedmineConnection } from '@/api/connectionTest'
+import { testGitlabConnection, testRedmineConnection, testAnthropicConnection } from '@/api/connectionTest'
 import type { ThemeMode } from '@/types/settings.types'
 
 function PasswordInput({
@@ -48,6 +48,7 @@ export function SettingsPage() {
 
   const [testingGitlab, setTestingGitlab] = useState(false)
   const [testingRedmine, setTestingRedmine] = useState(false)
+  const [testingAnthropic, setTestingAnthropic] = useState(false)
 
   const handleTestGitlab = async () => {
     setTestingGitlab(true)
@@ -70,6 +71,17 @@ export function SettingsPage() {
       showToast(`Redmine 연결 성공 (${result.username})`, 'success')
     } else {
       showToast(result.error || 'Redmine 연결 실패', 'error')
+    }
+  }
+
+  const handleTestAnthropic = async () => {
+    setTestingAnthropic(true)
+    const result = await testAnthropicConnection(anthropicKey)
+    setTestingAnthropic(false)
+    if (result.success) {
+      showToast(`Anthropic 연결 성공 (${result.model})`, 'success')
+    } else {
+      showToast(result.error || 'Anthropic 연결 실패', 'error')
     }
   }
 
@@ -135,6 +147,14 @@ export function SettingsPage() {
               <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Anthropic API Key</label>
               <PasswordInput value={anthropicKey} onChange={setAnthropicKey} placeholder="sk-ant-xxxxxxxxxxxx" />
             </div>
+            <button
+              onClick={handleTestAnthropic}
+              disabled={testingAnthropic || !anthropicKey}
+              className="flex items-center gap-2 px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {testingAnthropic && <Loader2 size={14} className="animate-spin" />}
+              연결 테스트
+            </button>
             <div>
               <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Claude 모델</label>
               {/* 모델은 haiku-4-5 단일 고정 */}

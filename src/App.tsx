@@ -27,12 +27,24 @@ function AppLayout() {
   useTheme()
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
-  // API 키 설정 여부 확인 (URL은 환경변수 고정, 토큰/키만 확인)
-  const gitlabToken = useSettingsStore((s) => s.gitlab.token)
-  const redmineApiKey = useSettingsStore((s) => s.redmine.apiKey)
-
   const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true'
-  const needsOnboarding = !isDemoMode && (!gitlabToken.trim() || !redmineApiKey.trim())
+
+  const isUnset = (val: string, defaultVal: string) =>
+    !val.trim() || val.trim() === defaultVal
+
+  // 마운트 시점에 한 번만 평가 — 이후 store 변경에 영향받지 않음
+  // GitLab · Redmine · Anthropic 중 하나라도 기본값이면 온보딩 필요
+  const [onboardingDone, setOnboardingDone] = useState(() => {
+    if (isDemoMode) return true
+    const { gitlab, redmine, anthropic } = useSettingsStore.getState()
+    return (
+      !isUnset(gitlab.token, 'your_gitlab_personal_access_token') &&
+      !isUnset(redmine.apiKey, 'your_redmine_api_key') &&
+      !isUnset(anthropic.apiKey, 'your_anthropic_api_key')
+    )
+  })
+
+  const needsOnboarding = !isDemoMode && !onboardingDone
 
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900 overflow-hidden">
@@ -54,8 +66,8 @@ function AppLayout() {
       </div>
       <ChatbotPanel />
 
-      {/* 온보딩 모달 — API 키 미설정 시 표시 (store 업데이트로 자동 해소) */}
-      {needsOnboarding && <OnboardingModal />}
+      {/* 온보딩 모달 — API 키 미설정 시 표시, 완료 버튼으로만 닫힘 */}
+      {needsOnboarding && <OnboardingModal onDismiss={() => setOnboardingDone(true)} />}
     </div>
   )
 }
